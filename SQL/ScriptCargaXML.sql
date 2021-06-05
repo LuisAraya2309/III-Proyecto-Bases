@@ -1,3 +1,5 @@
+USE SistemaObrero;
+SET LANGUAGE SPANISH;
 
 DECLARE @docXML XML = (
 SELECT * FROM(
@@ -10,7 +12,7 @@ SELECT * FROM(
 -- C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\Proyecto-2-Bases\Proyecto-2-Bases-de-Datos\SQL\StoredProcedures\CargaInformacion\Datos_Tarea2.xml
 	-- C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL
 
-
+/*
 --CATALOGOS----------------------------------------------------------------
 --Puestos
 INSERT INTO Puestos
@@ -129,8 +131,104 @@ INSERT INTO Usuarios
 	FROM @docXML.nodes('Datos/Usuarios/Usuario') AS A(usuario);
 
 
+--Proceso de Operaciones--------------------------------------------------
+
+*/
 
 
+--Se crea una tabla que va a contener una fecha y una operacion, ambos relacionados
+CREATE TABLE #Operaciones(Fecha DATE,Operacion XML);
+
+DECLARE @fechaActual DATE;
+SELECT TOP 1 @fechaActual = Item.value('@Fecha','DATE')
+FROM @docXML.nodes('Datos/Operacion') AS T(Item)
+
+DECLARE @ultimaFecha DATE;
+SELECT @ultimaFecha = Item.value('@Fecha','DATE')
+FROM @docXML.nodes('Datos/Operacion') AS T(Item)
+
+
+DECLARE @indiceNodo INT
+SELECT @indiceNodo = 1;
+
+WHILE (@fechaActual<=@ultimaFecha)
+	BEGIN
+		INSERT INTO #Operaciones
+			VALUES(
+				@fechaActual,
+				@docXML.query('/Datos/Operacion[sql:variable("@indiceNodo")]')
+				)
+				SET @fechaActual = DATEADD(DAY,1,@fechaActual);
+				SELECT @indiceNodo = @indiceNodo + 1; 
+	END
+
+--Preparo las variables de mes y semana para empezar a iterar operacion por operacion
+SELECT TOP 1 @fechaActual = Item.value('@Fecha','DATE')
+FROM @docXML.nodes('Datos/Operacion') AS T(Item)
+
+
+
+
+--INICIO DE LA ITERACION DE OPERACION POR OPERACION
+
+WHILE @fechaActual<= @ultimaFecha
+	BEGIN
+		--Se guarda en una variable de tipo XML el nodo que se va a procesar 
+		--para que el acceso sea más sencillo en las operaciones
+		DECLARE @nodoActual XML;
+		SELECT @nodoActual = CONVERT(XML,Operacion)
+		FROM
+		#Operaciones WHERE Fecha = @fechaActual;
+
+		--Se verifica si la fecha corresponde a cierre de semana y cambio de mes
+		IF DATEPART(WEEKDAY,@fechaActual) = 4   --Esto es si es jueves
+			BEGIN
+				IF (DATENAME(MONTH,@fechaActual)) <>(DATENAME(MONTH,DATEADD(DAY,-7,@fechaActual))) 
+
+					INSERT INTO dbo.MesPlanilla
+						VALUES((SELECT DATEADD(DAY,1,@fechaActual)),(SELECT DATEADD(MONTH,1,@fechaActual)))
+
+					INSERT INTO dbo.SemanaPlanilla
+						VALUES(@fechaActual,(SELECT DATEADD(WEEK,1,@fechaActual)),(SELECT MAX(Id) AS id FROM MesPlanilla))
+			END
+
+		
+
+		--Se empieza a ejecutar la accion dependiendo del tag
+
+
+		--Agregar nuevo empleado
+		
+		IF ((SELECT Operacion.exist('Operacion/NuevoEmpleado') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
+			BEGIN
+				INSERT INTO Empleado
+				/*
+				Nombre
+				ValorDocId
+				FechaNacimiento
+				IdPuesto
+				IdDepartamento
+				IdTipoDocIdentidad
+				IdUsuario
+				Activo
+				*/
+					SELECT  Item.value('@Nombre','VARCHAR(64)') AS nombre,
+							Item.value('@ValorDocumentoIdentidad','INT') AS valorDocIdentidad,
+							Item.value('@FechaNacimiento','DATE') AS fechaNacimiento,
+							Item.value('@idPuesto','') AS idPuesto,
+							Item.value('@idDepartamento','') AS idDepartamento,
+							Item.value('@idTipoDocumentacionIdentidad','') AS idTipoDocIdentidad,
+							Item.value('@id','') AS, 
+							1 AS Activo
+
+				
+			END
+
+		SET @fechaActual =  DATEADD(DAY,1,@fechaActual);
+
+	END
+
+DROP TABLE #Operaciones
 
 
 
