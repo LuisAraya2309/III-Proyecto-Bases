@@ -12,7 +12,7 @@ SELECT * FROM(
 -- C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\Proyecto-2-Bases\Proyecto-2-Bases-de-Datos\SQL\StoredProcedures\CargaInformacion\Datos_Tarea2.xml
 	-- C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL
 
-/*
+
 --CATALOGOS----------------------------------------------------------------
 --Puestos
 INSERT INTO Puestos
@@ -120,6 +120,7 @@ SELECT @count = COUNT(*) FROM #TipoDeduccionTemporal;
 --CATALOGOS----------------------------------------------------------------
 
 --Usuarios
+/*
 INSERT INTO Usuarios
 
 	SELECT
@@ -129,11 +130,11 @@ INSERT INTO Usuarios
 		1 AS activo
         
 	FROM @docXML.nodes('Datos/Usuarios/Usuario') AS A(usuario);
-
+*/
 
 --Proceso de Operaciones--------------------------------------------------
 
-*/
+
 
 
 --Se crea una tabla que va a contener una fecha y una operacion, ambos relacionados
@@ -165,6 +166,7 @@ WHILE (@fechaActual<=@ultimaFecha)
 --Preparo las variables de mes y semana para empezar a iterar operacion por operacion
 SELECT TOP 1 @fechaActual = Item.value('@Fecha','DATE')
 FROM @docXML.nodes('Datos/Operacion') AS T(Item)
+
 
 
 
@@ -201,29 +203,71 @@ WHILE @fechaActual<= @ultimaFecha
 		
 		IF ((SELECT Operacion.exist('Operacion/NuevoEmpleado') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 			BEGIN
-				INSERT INTO Empleado
-				/*
-				Nombre
-				ValorDocId
-				FechaNacimiento
-				IdPuesto
-				IdDepartamento
-				IdTipoDocIdentidad
-				IdUsuario
-				Activo
-				*/
-					SELECT  Item.value('@Nombre','VARCHAR(64)') AS nombre,
-							Item.value('@ValorDocumentoIdentidad','INT') AS valorDocIdentidad,
-							Item.value('@FechaNacimiento','DATE') AS fechaNacimiento,
-							Item.value('@idPuesto','') AS idPuesto,
-							Item.value('@idDepartamento','') AS idDepartamento,
-							Item.value('@idTipoDocumentacionIdentidad','') AS idTipoDocIdentidad,
-							Item.value('@id','') AS, 
+				INSERT INTO dbo.Empleados
+
+					SELECT  
+							Item.value('@Nombre','VARCHAR(64)') AS Nombre,
+							Item.value('@ValorDocumentoIdentidad','INT') AS ValorDocumentoIdentidad,
+							Item.value('@FechaNacimiento','DATE') AS FechaNacimiento,
+							Item.value('@idPuesto','INT') AS IdPuesto,
+							Item.value('@idDepartamento','INT') AS IdDepartamento,
+							Item.value('@idTipoDocumentacionIdentidad','INT') AS IdTipoDocumentoIdentidad,
+							Item.value('@Username','VARCHAR(64)') AS NombreUsuario,
+							Item.value('@Password','VARCHAR(64)') AS Contraseña,
+							1 AS Tipo,
 							1 AS Activo
+
+					FROM @nodoActual.nodes('Operacion/NuevoEmpleado') AS T(Item)
 
 				
 			END
 
+		--Insertar Tipo Jornada Proxima Semana
+		IF ((SELECT Operacion.exist('Operacion/TipoDeJornadaProximaSemana') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
+			BEGIN
+				INSERT INTO Jornada
+					SELECT 
+						tipoJornadaProximaSemana.value('@IdJornada','INT') AS idJornada,
+						(SELECT E.Id FROM dbo.Empleados AS E WHERE E.ValorDocumentoIdentidad = tipoJornadaProximaSemana.value('@ValorDocumentoIdentidad','INT')),
+						(SELECT IDENT_CURRENT('SemanaPlanilla'))
+
+					FROM @nodoActual.nodes('Operacion/TipoDeJornadaProximaSemana') AS T(tipoJornadaProximaSemana)
+			END
+
+		--Eliminar Empleado
+		IF ((SELECT Operacion.exist('Operacion/EliminarEmpleado') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
+
+			BEGIN
+
+				CREATE TABLE #EliminacionesEmpleados(ValorDocIdentidad INT);
+				INSERT INTO #EliminacionesEmpleados
+					SELECT 
+						Item.value('@ValorDocumentoIdentidad','INT') as valorDocIdentidad 
+					FROM @nodoActual.nodes('Operacion/EliminarEmpleado') AS T(Item)
+					
+					
+				DECLARE @countEliminar INT;
+				SELECT @countEliminar = COUNT(*) FROM #EliminacionesEmpleados;
+				
+				WHILE @countEliminar>0
+					BEGIN
+						UPDATE dbo.Empleados
+							SET 
+								Empleados.Activo = 0
+							WHERE 
+								Empleados.ValorDocumentoIdentidad = (SELECT TOP(1) ValorDocIdentidad FROM #EliminacionesEmpleados);
+
+						DELETE TOP (1) FROM #EliminacionesEmpleados
+						SELECT @countEliminar = COUNT(*) FROM #EliminacionesEmpleados;
+					END
+				
+				DROP TABLE #EliminacionesEmpleados;
+
+			END
+
+
+
+		--Iterador 
 		SET @fechaActual =  DATEADD(DAY,1,@fechaActual);
 
 	END
