@@ -13,7 +13,9 @@ delete from TipoJornada;
 delete from SemanaPlanilla;
 delete from MesPlanilla;
 delete from Feriados;
-delete from Errores 
+delete from Errores
+
+
 /*DROP PROCEDURE sp_CargarPuestos;
 DROP PROCEDURE sp_CargarDepartamentos;
 DROP PROCEDURE sp_CargarTipoDocIdentidad;

@@ -5,12 +5,12 @@ DECLARE @docXML XML = (
 SELECT * FROM(
 	SELECT CAST(c AS XML) FROM
 	OPENROWSET(
-		BULK 'C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea2.xml',SINGLE_BLOB) AS T(c)
+		BULK 'C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea2.xml',SINGLE_BLOB) AS T(c)
 	) AS S(C)
 )
 
 -- C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea2.xml
-	-- C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL
+	-- C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea2.xml
 
 
 --CATALOGOS----------------------------------------------------------------
@@ -265,6 +265,7 @@ WHILE @fechaActual<= @ultimaFecha
 
 			END
 
+		/*
 		--Asociar Empleado con deduccion
 		IF ((SELECT Operacion.exist('Operacion/AsociaEmpleadoConDeduccion') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 
@@ -278,6 +279,82 @@ WHILE @fechaActual<= @ultimaFecha
 
 					FROM @nodoActual.nodes('Operacion/AsociaEmpleadoConDeduccion') AS T(AsociaDeduccion)
 			END
+		*/
+
+		--Marcas de Asistencias
+
+		IF ((SELECT Operacion.exist('Operacion/MarcaDeAsistencia') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
+			BEGIN
+				CREATE TABLE #MarcasAux (FechaInicio SMALLDATETIME,FechaFin SMALLDATETIME,IdJornada INT);
+				INSERT INTO #MarcasAux
+					SELECT
+						marcaAsistencia.value('@FechaEntrada','SMALLDATETIME') AS fechaEntrada,
+						marcaAsistencia.value('@FechaSalida','SMALLDATETIME') AS fechaSalida,
+						(SELECT TOP 1 J.id 
+						FROM dbo.Jornada AS J 
+						WHERE J.IdEmpleado IN (SELECT TOP 1 E.Id 
+												FROM dbo.Empleados AS E 
+												WHERE E.ValorDocumentoIdentidad = marcaAsistencia.value('@ValorDocumentoIdentidad','INT')))
+
+					FROM @nodoActual.nodes('Operacion/MarcaDeAsistencia') AS T(marcaAsistencia)
+
+				DECLARE @countMarcasAux INT;
+				SELECT @countMarcasAux = COUNT(*) FROM #MarcasAux;
+
+				WHILE @countMarcasAux>0
+					BEGIN
+						DECLARE @fechaInicio SMALLDATETIME = (SELECT TOP(1) FechaInicio FROM #MarcasAux);
+						DECLARE @fechaFin SMALLDATETIME = (SELECT TOP(1) FechaFin FROM #MarcasAux);
+						DECLARE @idJornada INT = (SELECT TOP(1) IdJornada FROM #MarcasAux);
+						DECLARE @idEmpleado INT = (SELECT IdEmpleado FROM Jornada WHERE Jornada.Id = @idJornada);
+						DECLARE @horasTrabajadas INT = DATEDIFF(HOUR,@fechaInicio,@fechaFin); --Calcula las horas trabajadas en la sesion
+						DECLARE @horaFinNormal SMALLDATETIME;
+						DECLARE @idTipoJornada INT = (SELECT Jornada.IdTipoJornada FROM Jornada WHERE  Id =  @idJornada );
+						DECLARE	@horasExtra INT = 0; DECLARE @horasExtrasDoble INT = 0; DECLARE @ganancias INT = 0;
+						DECLARE @salarioXHora INT = (
+													SELECT SalarioXHora FROM Puestos WHERE Puestos.Id = (SELECT IdPuesto FROM Empleados WHERE Empleados.Id = @idEmpleado)
+													);
+						SELECT @horaFinNormal = (
+							CONVERT(
+								SMALLDATETIME,
+								(SELECT HoraFin FROM TipoJornada WHERE Id = @idTipoJornada)  --Selecciona la hora de fin segun el tipo de jornada CAMBIAR TABLA A SMALLDATETIME
+								)
+						);
+						PRINT('Hola')
+						IF (DATEPART(WEEKDAY,@fechaActual) = 7) OR (@fechaActual IN (SELECT Fecha FROM Feriados)) --Si es domingo o la fecha es un feriado son horas extra dobles
+							BEGIN 
+								SELECT @horasExtrasDoble = DATEDIFF(HOUR,@horaFinNormal,@fechaFin);
+							END
+
+						SELECT @horasExtra = DATEDIFF(HOUR,@horaFinNormal,@fechaFin);
+						SELECT @ganancias = (@salarioXHora*(@horasTrabajadas-@horasExtra-@horasExtrasDoble)) + (@salarioXHora*1.5*@horasExtra) + (@salarioXHora*2*@horasExtrasDoble);
+						
+						INSERT INTO MarcasAsistencias
+							VALUES
+							(
+							@fechaInicio,
+							@fechaFin,                             --Esto corregirlo porque debe ser por movimientos
+							@idJornada,
+							@ganancias,
+							@horasTrabajadas-@horasExtra-@horasExtrasDoble,
+							@horasExtra,
+							@horasExtrasDoble
+							)
+						
+
+
+						/*
+						Aqui se crearia el movimiento de planilla
+						*/
+						DELETE TOP (1) FROM #MarcasAux;
+						SELECT @countMarcasAux = COUNT(*) FROM #MarcasAux;
+						SELECT @countMarcasAux;
+					END
+				DROP TABLE #MarcasAux
+
+			END
+
+
 
 		--Iterador 
 		SET @fechaActual =  DATEADD(DAY,1,@fechaActual);
@@ -285,7 +362,7 @@ WHILE @fechaActual<= @ultimaFecha
 	END
 
 DROP TABLE #Operaciones	
-
+DROP TABLE #MarcasAux
 
 
 
