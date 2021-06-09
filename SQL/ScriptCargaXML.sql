@@ -5,11 +5,11 @@ DECLARE @docXML XML = (
 SELECT * FROM(
 	SELECT CAST(c AS XML) FROM
 	OPENROWSET(
-		BULK 'C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea2.xml',SINGLE_BLOB) AS T(c)
+		BULK 'C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea2.xml',SINGLE_BLOB) AS T(c)
 	) AS S(C)
 )
 
--- C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\Proyecto-2-Bases\Proyecto-2-Bases-de-Datos\SQL\StoredProcedures\CargaInformacion\Datos_Tarea2.xml
+-- C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea2.xml
 	-- C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL
 
 
@@ -265,14 +265,26 @@ WHILE @fechaActual<= @ultimaFecha
 
 			END
 
+		--Asociar Empleado con deduccion
+		IF ((SELECT Operacion.exist('Operacion/AsociaEmpleadoConDeduccion') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 
+			BEGIN
+				INSERT INTO	DeduccionXEmpleado
+					SELECT
+						--Fecha Inicio
+						--Fecha Fin
+						(SELECT Id FROM Empleados AS E WHERE E.ValorDocumentoIdentidad = AsociaDeduccion.value('@ValorDocumentoIdentidad','INT'))
+						,(AsociaDeduccion.value('@IdDeduccion','INT'))
+
+					FROM @nodoActual.nodes('Operacion/AsociaEmpleadoConDeduccion') AS T(AsociaDeduccion)
+			END
 
 		--Iterador 
 		SET @fechaActual =  DATEADD(DAY,1,@fechaActual);
 
 	END
 
-DROP TABLE #Operaciones
+DROP TABLE #Operaciones	
 
 
 
