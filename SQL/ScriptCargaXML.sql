@@ -205,7 +205,10 @@ WHILE @fechaActual<=@ultimaFecha
 		IF ((SELECT Operacion.exist('Operacion/NuevoEmpleado') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 			BEGIN
 				-- Hacerlo en una tabla temporal para agregar uno por uno
-				INSERT INTO dbo.Empleados
+				CREATE TABLE #EmpleadosTemp(Nombre VARCHAR(64), ValorDocumentoIdentidad INT, FechaNacimiento DATE, IdPuesto INT, IdDepartamento INT,
+				IdTipoDocumentoIdentidad INT, NombreUsuario VARCHAR(64), Contraseña VARCHAR(64));
+
+				INSERT INTO #EmpleadosTemp
 
 					SELECT  
 							Item.value('@Nombre','VARCHAR(64)') AS Nombre,
@@ -221,7 +224,35 @@ WHILE @fechaActual<=@ultimaFecha
 
 					FROM @nodoActual.nodes('Operacion/NuevoEmpleado') AS T(Item)
 
-				
+				DECLARE @countInsertar INT;
+				SELECT @countInsertar = COUNT(*) FROM #EmpleadosTemp;
+
+				WHILE @countInsertar > 0
+					BEGIN
+						DECLARE @Nombre Varchar(40) = (SELECT TOP(1) Nombre FROM #EmpleadosTemp)
+						DECLARE @ValorDocumentoIdentidad INT =  (SELECT TOP(1) ValorDocumentoIdentidad FROM #EmpleadosTemp)
+						DECLARE @FechaNacimiento DATE = (SELECT TOP(1) FechaNacimiento FROM #EmpleadosTemp)
+						DECLARE @IdPuesto INT = (SELECT TOP(1) IdPuesto FROM #EmpleadosTemp)
+						DECLARE @IdDepartamento INT =  (SELECT TOP(1) IdDepartamento FROM #EmpleadosTemp)
+						DECLARE @IdTipoDocumentoIdentidad INT = (SELECT TOP(1) IdTipoDocumentoIdentidad FROM #EmpleadosTemp)
+						DECLARE @NombreUsuario VARCHAR(64) = (SELECT TOP(1) NombreUsuario FROM #EmpleadosTemp)
+						DECLARE @Contraseña VARCHAR(64) = (SELECT TOP(1) Contraseña FROM #EmpleadosTemp)
+
+						EXEC sp_InsertarEmpleado
+							@Nombre
+							, @ValorDocumentoIdentidad
+							, @FechaNacimiento
+							, @IdPuesto
+							, @IdDepartamento
+							, @IdTipoDocumentoIdentidad
+							, @NombreUsuario
+							, @Contraseña
+							, 0
+
+						DELETE TOP (1) FROM #EmpleadosTemp
+						SELECT @countInsertar = COUNT(*) FROM #EmpleadosTemp;
+					END
+				DROP TABLE #EmpleadosTemp
 			END
 
 		--Insertar Tipo Jornada Proxima Semana
