@@ -1,5 +1,5 @@
 USE [SistemaObrero]
-delete from MarcasAsistencias;
+delete from MarcaDeAsistencia;
 delete from DeduccionXEmpleado;
 delete from Jornada;
 delete from Empleados;
@@ -31,7 +31,7 @@ DROP PROCEDURE sp_CargarMarcasAsistencia;
 DROP PROCEDURE sp_CargarEliminarEmpleados;
 DROP TABLE Errores */
 DBCC CHECKIDENT ('Empleados', RESEED, 0)
-DBCC CHECKIDENT ('MarcasAsistencias', RESEED, 0)
+DBCC CHECKIDENT ('MarcaDeAsistencia', RESEED, 0)
 DBCC CHECKIDENT ('Jornada', RESEED, 0)
 DBCC CHECKIDENT ('SemanaPlanilla', RESEED, 0)
 DBCC CHECKIDENT ('MesPlanilla', RESEED, 0)

@@ -5,12 +5,12 @@ DECLARE @docXML XML = (
 SELECT * FROM(
 	SELECT CAST(c AS XML) FROM
 	OPENROWSET(
-		BULK 'C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea2.xml',SINGLE_BLOB) AS T(c)
+		BULK 'C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea3.xml',SINGLE_BLOB) AS T(c)
 	) AS S(C)
 )
 
--- C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea2.xml
-	-- C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea2.xml
+-- C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea3.xml
+	-- C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea3.xml
 
 
 --CATALOGOS----------------------------------------------------------------
@@ -68,8 +68,9 @@ INSERT INTO TipoMovimientoPlanilla
 
 INSERT INTO Feriados
 	SELECT
-		feriado.value('@Fecha','VARCHAR(64)') AS fecha,
-		feriado.value('@Nombre','VARCHAR(64)') AS nombre
+		feriado.value('@Nombre','VARCHAR(64)') AS nombre,
+		feriado.value('@Fecha','DATE') AS fecha
+		
                 
 	FROM @docXML.nodes('Datos/Catalogos/Feriados/Feriado') AS A(feriado)
 
@@ -173,7 +174,7 @@ FROM @docXML.nodes('Datos/Operacion') AS T(Item)
 
 --INICIO DE LA ITERACION DE OPERACION POR OPERACION
 
-WHILE @fechaActual<= @ultimaFecha
+WHILE @fechaActual<=@ultimaFecha
 	BEGIN
 		--Se guarda en una variable de tipo XML el nodo que se va a procesar 
 		--para que el acceso sea más sencillo en las operaciones
@@ -203,6 +204,7 @@ WHILE @fechaActual<= @ultimaFecha
 		
 		IF ((SELECT Operacion.exist('Operacion/NuevoEmpleado') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 			BEGIN
+				-- Hacerlo en una tabla temporal para agregar uno por uno
 				INSERT INTO dbo.Empleados
 
 					SELECT  
@@ -303,12 +305,12 @@ WHILE @fechaActual<= @ultimaFecha
 
 				WHILE @countMarcasAux>0
 					BEGIN
-						DECLARE @fechaInicio SMALLDATETIME = (SELECT TOP(1) FechaInicio FROM #MarcasAux);
-						DECLARE @fechaFin SMALLDATETIME = (SELECT TOP(1) FechaFin FROM #MarcasAux);
+						DECLARE @fechaInicio SMALLDATETIME =  CONVERT(TIME,(SELECT TOP(1) FechaInicio FROM #MarcasAux));
+						DECLARE @fechaFin SMALLDATETIME =  CONVERT(TIME,(SELECT TOP(1) FechaFin FROM #MarcasAux));
 						DECLARE @idJornada INT = (SELECT TOP(1) IdJornada FROM #MarcasAux);
 						DECLARE @idEmpleado INT = (SELECT IdEmpleado FROM Jornada WHERE Jornada.Id = @idJornada);
 						DECLARE @horasTrabajadas INT = DATEDIFF(HOUR,@fechaInicio,@fechaFin); --Calcula las horas trabajadas en la sesion
-						DECLARE @horaFinNormal SMALLDATETIME;
+						DECLARE @horaFinNormal TIME;
 						DECLARE @idTipoJornada INT = (SELECT Jornada.IdTipoJornada FROM Jornada WHERE  Id =  @idJornada );
 						DECLARE	@horasExtra INT = 0; DECLARE @horasExtrasDoble INT = 0; DECLARE @ganancias INT = 0;
 						DECLARE @salarioXHora INT = (
@@ -317,52 +319,49 @@ WHILE @fechaActual<= @ultimaFecha
 						SELECT @horaFinNormal = (
 							CONVERT(
 								SMALLDATETIME,
-								(SELECT HoraFin FROM TipoJornada WHERE Id = @idTipoJornada)  --Selecciona la hora de fin segun el tipo de jornada CAMBIAR TABLA A SMALLDATETIME
+								(SELECT HoraFin FROM TipoJornada WHERE Id = @idTipoJornada)  
 								)
 						);
-						PRINT('Hola')
-						IF (DATEPART(WEEKDAY,@fechaActual) = 7) OR (@fechaActual IN (SELECT Fecha FROM Feriados)) --Si es domingo o la fecha es un feriado son horas extra dobles
-							BEGIN 
-								SELECT @horasExtrasDoble = DATEDIFF(HOUR,@horaFinNormal,@fechaFin);
-							END
 
+						IF (DATEPART(WEEKDAY,@fechaActual) = 7) OR (@fechaActual IN (SELECT Fecha FROM Feriados)) --Si es domingo o la fecha es un feriado son horas extra dobles
+							BEGIN
+								SELECT @horasExtrasDoble = DATEDIFF(HOUR,@horaFinNormal,@fechaFin); 
+							END
 						SELECT @horasExtra = DATEDIFF(HOUR,@horaFinNormal,@fechaFin);
-						SELECT @ganancias = (@salarioXHora*(@horasTrabajadas-@horasExtra-@horasExtrasDoble)) + (@salarioXHora*1.5*@horasExtra) + (@salarioXHora*2*@horasExtrasDoble);
+						IF @horasExtrasDoble>0
+							BEGIN
+								SELECT @horasExtra = 0;
+							END
+						SELECT @horasTrabajadas = @horasTrabajadas-@horasExtra-@horasExtrasDoble;
+
+						SELECT @ganancias = (@salarioXHora*@horasTrabajadas) + (@salarioXHora*1.5*@horasExtra) + (@salarioXHora*2*@horasExtrasDoble);
 						
-						INSERT INTO MarcasAsistencias
+						INSERT INTO dbo.MarcaDeAsistencia
 							VALUES
 							(
 							@fechaInicio,
-							@fechaFin,                             --Esto corregirlo porque debe ser por movimientos
-							@idJornada,
-							@ganancias,
-							@horasTrabajadas-@horasExtra-@horasExtrasDoble,
-							@horasExtra,
-							@horasExtrasDoble
+							@fechaFin,                             
+							@idJornada
 							)
-						
 
-
-						/*
-						Aqui se crearia el movimiento de planilla
-						*/
-						DELETE TOP (1) FROM #MarcasAux;
+					
+						SELECT @idTipoJornada,@horasTrabajadas,@horasExtra,@horasExtrasDoble,@salarioXHora,@ganancias;
+						DELETE TOP(1) FROM #MarcasAux
 						SELECT @countMarcasAux = COUNT(*) FROM #MarcasAux;
-						SELECT @countMarcasAux;
 					END
 				DROP TABLE #MarcasAux
-
+				
 			END
 
 
-
+			 
 		--Iterador 
 		SET @fechaActual =  DATEADD(DAY,1,@fechaActual);
-
+		SELECT @fechaActual;
 	END
 
-DROP TABLE #Operaciones	
-DROP TABLE #MarcasAux
+--DROP TABLE #Operaciones	
+--DROP TABLE #MarcasAux
 
 
 
