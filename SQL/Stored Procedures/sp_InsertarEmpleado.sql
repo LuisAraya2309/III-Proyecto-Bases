@@ -5,14 +5,15 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE sp_CargarEmpleados
+CREATE PROCEDURE sp_InsertarEmpleado
 	@inNombre VARCHAR(40)
 	, @inValorDocumentoIdentidad INT
 	, @inFechaNacimiento DATE
 	, @inIdPuesto INT
 	, @inIdDepartamento INT
 	, @inIdTipoDocumentacionIdentidad INT
-	, @inIdUsuario INT
+	, @inUsuario VARCHAR(64)
+	, @inContraseña VARCHAR(64)
 	, @OutResultCode INT OUTPUT
 
 AS
@@ -24,7 +25,8 @@ BEGIN
 		--	, @inIdPuesto INT
 		--	, @inIdDepartamento INT
 		--	, @inIdTipoDocumentacionIdentidad INT
-		--	, @inIdUsuario
+		--	, @inUsuario
+		--	, @inContraseña
 		--	, @OutResultCode INT OUTPUT
 
 		--EXEC sp_CargarEmpleados
@@ -36,7 +38,7 @@ BEGIN
 				@OutResultCode=0 ;
 
 			BEGIN TRANSACTION TSaveMov
-				INSERT INTO Empleado
+				INSERT INTO Empleados
 					VALUES(
 						@inNombre
 						, @inValorDocumentoIdentidad
@@ -44,7 +46,9 @@ BEGIN
 						, @inIdPuesto
 						, @inIdDepartamento
 						, @inIdTipoDocumentacionIdentidad
-						, @inIdUsuario
+						, @inUsuario
+						, @inContraseña
+						, 2
 						, 1
 					)
 			COMMIT TRANSACTION TSaveMov;
