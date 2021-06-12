@@ -1,5 +1,5 @@
 USE SistemaObrero;
-SET LANGUAGE SPANISH;
+SET LANGUAGE Spanish;
 
 DECLARE @docXML XML = (
 SELECT * FROM(
@@ -183,16 +183,25 @@ WHILE @fechaActual<=@ultimaFecha
 		FROM
 		#Operaciones WHERE Fecha = @fechaActual;
 
+		
 		--Se verifica si la fecha corresponde a cierre de semana y cambio de mes
-		IF DATEPART(WEEKDAY,@fechaActual) = 4   --Esto es si es jueves
+		IF DATEPART(WEEKDAY, @fechaActual) = 4
 			BEGIN
-				IF (DATENAME(MONTH,@fechaActual)) <>(DATENAME(MONTH,DATEADD(DAY,-7,@fechaActual))) 
-
+				IF(DATENAME(MONTH,DATEADD(DAY,1,@fechaActual)) <> DATENAME(MONTH,DATEADD(DAY,-6,@fechaActual)))
+				BEGIN
+					DECLARE @Semanas INT = 0
+					DECLARE @RecorrerSemanas DATE = (SELECT DATEADD(DAY,1,@fechaActual))
+					WHILE (DATENAME(MONTH,DATEADD(DAY,1,@fechaActual)) = (DATENAME(MONTH,@RecorrerSemanas)))
+					BEGIN
+						SET @RecorrerSemanas = (SELECT DATEADD(WEEK,1,@RecorrerSemanas))
+						SET @Semanas = @Semanas+1
+					END
 					INSERT INTO dbo.MesPlanilla
-						VALUES((SELECT DATEADD(DAY,1,@fechaActual)),(SELECT DATEADD(MONTH,1,@fechaActual)))
+					VALUES((SELECT DATEADD(DAY,1,@fechaActual)), (SELECT DATEADD(DAY,7*@Semanas,@fechaActual)))
+				END
 
-					INSERT INTO dbo.SemanaPlanilla
-						VALUES(@fechaActual,(SELECT DATEADD(WEEK,1,@fechaActual)),(SELECT MAX(Id) AS id FROM MesPlanilla))
+				INSERT INTO dbo.SemanaPlanilla
+				VALUES((SELECT DATEADD(DAY,1,@fechaActual)), (SELECT DATEADD(DAY,7,@fechaActual)), (SELECT MAX(Id) AS Id FROM dbo.MesPlanilla))
 			END
 
 		
@@ -206,10 +215,9 @@ WHILE @fechaActual<=@ultimaFecha
 			BEGIN
 				-- Hacerlo en una tabla temporal para agregar uno por uno
 				CREATE TABLE #EmpleadosTemp(Nombre VARCHAR(64), ValorDocumentoIdentidad INT, FechaNacimiento DATE, IdPuesto INT, IdDepartamento INT,
-				IdTipoDocumentoIdentidad INT, NombreUsuario VARCHAR(64), Contraseña VARCHAR(64));
+				IdTipoDocumentoIdentidad INT, NombreUsuario VARCHAR(64), Contraseña VARCHAR(64),Tipo INT,Activo BIT);
 
 				INSERT INTO #EmpleadosTemp
-
 					SELECT  
 							Item.value('@Nombre','VARCHAR(64)') AS Nombre,
 							Item.value('@ValorDocumentoIdentidad','INT') AS ValorDocumentoIdentidad,
@@ -226,7 +234,6 @@ WHILE @fechaActual<=@ultimaFecha
 
 				DECLARE @countInsertar INT;
 				SELECT @countInsertar = COUNT(*) FROM #EmpleadosTemp;
-
 				WHILE @countInsertar > 0
 					BEGIN
 						DECLARE @Nombre Varchar(40) = (SELECT TOP(1) Nombre FROM #EmpleadosTemp)
@@ -254,8 +261,9 @@ WHILE @fechaActual<=@ultimaFecha
 					END
 				DROP TABLE #EmpleadosTemp
 			END
-
+		
 		--Insertar Tipo Jornada Proxima Semana
+		
 		IF ((SELECT Operacion.exist('Operacion/TipoDeJornadaProximaSemana') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 			BEGIN
 				INSERT INTO Jornada
@@ -266,8 +274,9 @@ WHILE @fechaActual<=@ultimaFecha
 
 					FROM @nodoActual.nodes('Operacion/TipoDeJornadaProximaSemana') AS T(tipoJornadaProximaSemana)
 			END
-
+		
 		--Eliminar Empleado
+		
 		IF ((SELECT Operacion.exist('Operacion/EliminarEmpleado') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 
 			BEGIN
@@ -297,7 +306,7 @@ WHILE @fechaActual<=@ultimaFecha
 				DROP TABLE #EliminacionesEmpleados;
 
 			END
-
+		
 		/*
 		--Asociar Empleado con deduccion
 		IF ((SELECT Operacion.exist('Operacion/AsociaEmpleadoConDeduccion') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
@@ -315,7 +324,7 @@ WHILE @fechaActual<=@ultimaFecha
 		*/
 
 		--Marcas de Asistencias
-
+		/*
 		IF ((SELECT Operacion.exist('Operacion/MarcaDeAsistencia') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 			BEGIN
 				CREATE TABLE #MarcasAux (FechaInicio SMALLDATETIME,FechaFin SMALLDATETIME,IdJornada INT);
@@ -374,26 +383,67 @@ WHILE @fechaActual<=@ultimaFecha
 							@fechaFin,                             
 							@idJornada
 							)
+						IF @horasExtra = 0 AND @horasExtrasDoble = 0
+							BEGIN 
+								INSERT INTO dbo.MovimientoPlanilla
+								VALUES
+								(
+								@fechaActual,
+								@ganancias,
+								1,
+								(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado )
+								)
 
-					
+							END
+
+						IF @horasExtra>0 AND @horasExtrasDoble = 0
+							BEGIN
+								INSERT INTO dbo.MovimientoPlanilla
+								VALUES
+								(
+								@fechaActual,
+								@ganancias,
+								2,
+								(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado )
+								)
+							END
+
+						IF @horasExtrasDoble>0 AND @horasExtra = 0
+							BEGIN
+								INSERT INTO dbo.MovimientoPlanilla
+								VALUES
+								(
+								@fechaActual,
+								@ganancias,
+								2,
+								(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado )
+								)
+							END
+						
+
+
 						SELECT @idTipoJornada,@horasTrabajadas,@horasExtra,@horasExtrasDoble,@salarioXHora,@ganancias;
 						DELETE TOP(1) FROM #MarcasAux
 						SELECT @countMarcasAux = COUNT(*) FROM #MarcasAux;
 					END
 				DROP TABLE #MarcasAux
 				
+				
 			END
-
+			*/
 
 			 
 		--Iterador 
 		SET @fechaActual =  DATEADD(DAY,1,@fechaActual);
-		SELECT @fechaActual;
+		
 	END
+	 
 
---DROP TABLE #Operaciones	
+
+
+DROP TABLE #Operaciones	
 --DROP TABLE #MarcasAux
-
+--DROP TABLE #EmpleadosTemp
 
 
 

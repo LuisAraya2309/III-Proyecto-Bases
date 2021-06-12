@@ -14,7 +14,8 @@ delete from SemanaPlanilla;
 delete from MesPlanilla;
 delete from Feriados;
 delete from Errores
-
+delete from PlanillaXSemanaxEmpleado;
+delete from PlanillaXMesxEmpleado;
 
 /*DROP PROCEDURE sp_CargarPuestos;
 DROP PROCEDURE sp_CargarDepartamentos;
@@ -35,3 +36,6 @@ DBCC CHECKIDENT ('MarcaDeAsistencia', RESEED, 0)
 DBCC CHECKIDENT ('Jornada', RESEED, 0)
 DBCC CHECKIDENT ('SemanaPlanilla', RESEED, 0)
 DBCC CHECKIDENT ('MesPlanilla', RESEED, 0)
+DBCC CHECKIDENT ('PlanillaXSemanaXEmpleado', RESEED, 0)
+DBCC CHECKIDENT ('PlanillaXMesxEmpleado', RESEED, 0)
+
