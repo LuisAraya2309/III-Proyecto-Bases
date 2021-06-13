@@ -5,8 +5,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE sp_CargarEliminarEmpleados
- 	@inValorDocIdentidad
+CREATE PROCEDURE sp_EliminarEmpleados
+ 	@inValorDocIdentidad INT
 	, @OutResultCode INT OUTPUT
 	
 AS
@@ -24,11 +24,11 @@ BEGIN
 			@OutResultCode=0 ;
 
 			BEGIN TRANSACTION TSaveMov
-				UPDATE dbo.Empleado
+				UPDATE dbo.Empleados
 					SET 
-						Empleado.Activo = 0
+						Empleados.Activo = 0
 					WHERE 
-						Empleado.ValorDocumentoIdentidad = @inValorDocIdentidad;
+						Empleados.ValorDocumentoIdentidad = @inValorDocIdentidad;
 			COMMIT TRANSACTION TSaveMov;
 
 

@@ -5,7 +5,7 @@ DECLARE @docXML XML = (
 SELECT * FROM(
 	SELECT CAST(c AS XML) FROM
 	OPENROWSET(
-		BULK 'C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea3.xml',SINGLE_BLOB) AS T(c)
+		BULK 'C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea3.xml',SINGLE_BLOB) AS T(c)
 	) AS S(C)
 )
 
@@ -266,13 +266,33 @@ WHILE @fechaActual<=@ultimaFecha
 		
 		IF ((SELECT Operacion.exist('Operacion/TipoDeJornadaProximaSemana') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 			BEGIN
-				INSERT INTO Jornada
+				CREATE TABLE #JornadaTemp(IdJornada INT, ValorDocIdentidad INT, IdSemanaPlanilla INT)
+				INSERT INTO #JornadaTemp
 					SELECT 
 						tipoJornadaProximaSemana.value('@IdJornada','INT') AS idJornada,
-						(SELECT E.Id FROM dbo.Empleados AS E WHERE E.ValorDocumentoIdentidad = tipoJornadaProximaSemana.value('@ValorDocumentoIdentidad','INT')),
+						tipoJornadaProximaSemana.value('@ValorDocumentoIdentidad','INT') AS ValorDocIdentidad ,
 						(SELECT IDENT_CURRENT('SemanaPlanilla'))
 
 					FROM @nodoActual.nodes('Operacion/TipoDeJornadaProximaSemana') AS T(tipoJornadaProximaSemana)
+
+				DECLARE @countJornadaTemp INT;
+				SELECT @countJornadaTemp = COUNT(*) FROM #JornadaTemp;
+				WHILE @countJornadaTemp > 0
+					BEGIN
+						DECLARE @IdJornada INT = (SELECT TOP(1) IdJornada FROM #JornadaTemp)
+						DECLARE @ValorDocIdentidad INT =  (SELECT TOP(1) ValorDocIdentidad FROM #JornadaTemp)
+						DECLARE @IdSemanaPlanilla INT = (SELECT TOP(1) IdSemanaPlanilla FROM #JornadaTemp)
+
+						EXEC sp_InsertarJornadaProximaSemana
+							@IdJornada
+							, @ValorDocIdentidad
+							, @IdSemanaPlanilla
+							, 0 
+
+						DELETE TOP (1) FROM #JornadaTemp
+						SELECT @countJornadaTemp = COUNT(*) FROM #JornadaTemp;
+					END
+				DROP TABLE #JornadaTemp
 			END
 		
 		--Eliminar Empleado
@@ -293,11 +313,11 @@ WHILE @fechaActual<=@ultimaFecha
 				
 				WHILE @countEliminar>0
 					BEGIN
-						UPDATE dbo.Empleados
-							SET 
-								Empleados.Activo = 0
-							WHERE 
-								Empleados.ValorDocumentoIdentidad = (SELECT TOP(1) ValorDocIdentidad FROM #EliminacionesEmpleados);
+						DECLARE @ValorDocId  INT = (SELECT TOP(1) ValorDocIdentidad FROM #EliminacionesEmpleados)
+						
+						EXEC sp_EliminarEmpleados
+							@ValorDocId
+							, 0
 
 						DELETE TOP (1) FROM #EliminacionesEmpleados
 						SELECT @countEliminar = COUNT(*) FROM #EliminacionesEmpleados;
@@ -441,7 +461,8 @@ WHILE @fechaActual<=@ultimaFecha
 
 
 
-DROP TABLE #Operaciones	
+--DROP TABLE #Operaciones
+--DROP TABLE #JornadaTemp
 --DROP TABLE #MarcasAux
 --DROP TABLE #EmpleadosTemp
 

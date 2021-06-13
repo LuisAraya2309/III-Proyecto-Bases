@@ -6,20 +6,19 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 
-CREATE PROCEDURE sp_CargarTipoJornadaProximaSemana
-		@inIdTipoJornada
-		, @inIdEmpleado
-		, @inIdSemanaPlanilla
+CREATE PROCEDURE sp_InsertarJornadaProximaSemana
+		@inIdTipoJornada INT
+		, @inValorDocIdentidad INT
+		, @inIdSemanaPlanilla INT
 		, @OutResultCode INT OUTPUT
 	
 AS
 BEGIN
 		--DECLARE
-		--		@inIdTipoJornada
-		--		, @inIdEmpleado
-		--		, @inIdSemanaPlanilla
+		--		@inIdTipoJornada INT
+		--		, @inValorDocIdentidad INT
+		--		, @inIdSemanaPlanilla INT
 		--		, @OutResultCode INT OUTPUT
-		--		, @OutResultCode INT
 
 		--EXEC sp_CargarTipoJornadaProximaSemana
 		--		@OutResultCode INT
@@ -33,7 +32,7 @@ BEGIN
 				INSERT INTO Jornada
 					VALUES(
 						@inIdTipoJornada
-						, @inIdEmpleado
+						, (SELECT E.Id FROM dbo.Empleados AS E WHERE E.ValorDocumentoIdentidad = @inValorDocIdentidad)
 						, @inIdSemanaPlanilla
 					)
 

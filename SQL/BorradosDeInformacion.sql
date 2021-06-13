@@ -1,4 +1,5 @@
 USE [SistemaObrero]
+--TABLAS
 delete from MarcaDeAsistencia;
 delete from DeduccionXEmpleado;
 delete from Jornada;
@@ -8,7 +9,6 @@ delete from Puestos;
 delete from DeduccionPorcentualObligatoria;
 delete from TipoDeduccion;
 delete from TipoDocIdentidad;
---delete from Usuarios;
 delete from TipoJornada;
 delete from SemanaPlanilla;
 delete from MesPlanilla;
@@ -17,20 +17,7 @@ delete from Errores
 delete from PlanillaXSemanaxEmpleado;
 delete from PlanillaXMesxEmpleado;
 
-/*DROP PROCEDURE sp_CargarPuestos;
-DROP PROCEDURE sp_CargarDepartamentos;
-DROP PROCEDURE sp_CargarTipoDocIdentidad;
-DROP PROCEDURE sp_CargarTipoJornada;
-DROP PROCEDURE sp_CargarTipoMovimientoPlanilla;
-DROP PROCEDURE sp_CargarFeriados;
-DROP PROCEDURE sp_CargarTipoDeduccion;
-DROP PROCEDURE sp_CargarUsuarios;
-DROP PROCEDURE sp_CargarEmpleados;
-DROP PROCEDURE sp_CargarMesesSemanas;
-DROP PROCEDURE sp_CargarTipoJornadaProximaSemana;
-DROP PROCEDURE sp_CargarMarcasAsistencia;
-DROP PROCEDURE sp_CargarEliminarEmpleados;
-DROP TABLE Errores */
+--IDENTITY
 DBCC CHECKIDENT ('Empleados', RESEED, 0)
 DBCC CHECKIDENT ('MarcaDeAsistencia', RESEED, 0)
 DBCC CHECKIDENT ('Jornada', RESEED, 0)
@@ -38,4 +25,7 @@ DBCC CHECKIDENT ('SemanaPlanilla', RESEED, 0)
 DBCC CHECKIDENT ('MesPlanilla', RESEED, 0)
 DBCC CHECKIDENT ('PlanillaXSemanaXEmpleado', RESEED, 0)
 DBCC CHECKIDENT ('PlanillaXMesxEmpleado', RESEED, 0)
+
+--STORED PROCEDURES
+/*DROP PROCEDURE sp_InsertarTipoJornadaProximaSemana*/
 
