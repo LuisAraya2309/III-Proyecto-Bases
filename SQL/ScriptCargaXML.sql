@@ -5,7 +5,7 @@ DECLARE @docXML XML = (
 SELECT * FROM(
 	SELECT CAST(c AS XML) FROM
 	OPENROWSET(
-		BULK 'C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea3.xml',SINGLE_BLOB) AS T(c)
+		BULK 'C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea3.xml',SINGLE_BLOB) AS T(c)
 	) AS S(C)
 )
 
@@ -192,16 +192,30 @@ WHILE @fechaActual<=@ultimaFecha
 					DECLARE @Semanas INT = 0
 					DECLARE @RecorrerSemanas DATE = (SELECT DATEADD(DAY,1,@fechaActual))
 					WHILE (DATENAME(MONTH,DATEADD(DAY,1,@fechaActual)) = (DATENAME(MONTH,@RecorrerSemanas)))
-					BEGIN
-						SET @RecorrerSemanas = (SELECT DATEADD(WEEK,1,@RecorrerSemanas))
-						SET @Semanas = @Semanas+1
-					END
+						BEGIN
+							SET @RecorrerSemanas = (SELECT DATEADD(WEEK,1,@RecorrerSemanas))
+							SET @Semanas = @Semanas+1
+						END
 					INSERT INTO dbo.MesPlanilla
-					VALUES((SELECT DATEADD(DAY,1,@fechaActual)), (SELECT DATEADD(DAY,7*@Semanas,@fechaActual)))
+						VALUES((SELECT DATEADD(DAY,1,@fechaActual)), (SELECT DATEADD(DAY,7*@Semanas,@fechaActual)))
+						
+
 				END
 
 				INSERT INTO dbo.SemanaPlanilla
-				VALUES((SELECT DATEADD(DAY,1,@fechaActual)), (SELECT DATEADD(DAY,7,@fechaActual)), (SELECT MAX(Id) AS Id FROM dbo.MesPlanilla))
+					VALUES((SELECT DATEADD(DAY,1,@fechaActual)), (SELECT DATEADD(DAY,7,@fechaActual)), (SELECT MAX(Id) AS Id FROM dbo.MesPlanilla))
+						/*
+						-Aplicar deducciones, esto es, generar los movimientos respecto de las 
+						deducciones. 
+						-Acumular en las instancias de Deducciones Mensuales por empleado, las 
+						deducciones de la semana que termina. 
+						- Actualizar la instancia de planilla mensual del empleado, respecto de salario 
+						Bruto y TotalDeducciones. 
+						- Determinar si la semana que finaliza es la última del mes, si es así, crear una 
+						nueva instancia de la planilla mensual del empleado. 
+						- Crear nueva semana para Planilla semanal del empleado. 
+						*/
+			
 			END
 
 		
@@ -327,21 +341,40 @@ WHILE @fechaActual<=@ultimaFecha
 
 			END
 		
-		/*
-		--Asociar Empleado con deduccion
+		
+		
 		IF ((SELECT Operacion.exist('Operacion/AsociaEmpleadoConDeduccion') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 
 			BEGIN
-				INSERT INTO	DeduccionXEmpleado
-					SELECT
-						--Fecha Inicio
-						--Fecha Fin
-						(SELECT Id FROM Empleados AS E WHERE E.ValorDocumentoIdentidad = AsociaDeduccion.value('@ValorDocumentoIdentidad','INT'))
-						,(AsociaDeduccion.value('@IdDeduccion','INT'))
+				CREATE TABLE #AsociaDeduccionTemp(ValorDocumentoIdentidad INT,IdTipoDeduccion INT);
+				INSERT INTO #AsociaDeduccionTemp
+						SELECT 
+							AsociaDeduccion.value('@ValorDocumentoIdentidad','INT'),
+							AsociaDeduccion.value('@IdDeduccion','INT')
+							
+				
+				FROM @nodoActual.nodes('Operacion/AsociaEmpleadoConDeduccion') AS T(AsociaDeduccion)
+				
+				DECLARE @countAsociaDedu INT;
+				SELECT @countAsociaDedu  = COUNT(*) FROM #AsociaDeduccionTemp;
+				
+				WHILE @countAsociaDedu>0
+					BEGIN
+						DECLARE @fechaInicioDedu DATE = (SELECT FechaInicio FROM SemanaPlanilla WHERE Id = (SELECT MAX(Id) FROM SemanaPlanilla) );
+						DECLARE @idEmpleado INT = (SELECT Id FROM Empleados WHERE ValorDocumentoIdentidad = 
+																			(SELECT TOP (1) ValorDocumentoIdentidad FROM #AsociaDeduccionTemp));
+						DECLARE @idTipoDeduccion INT = (SELECT TOP(1) IdTipoDeduccion FROM #AsociaDeduccionTemp);
+						INSERT INTO DeduccionXEmpleado(FechaInicio,IdEmpleado,IdTipoDeduccion)
+							SELECT @fechaInicioDedu,@idEmpleado,@idTipoDeduccion
 
-					FROM @nodoActual.nodes('Operacion/AsociaEmpleadoConDeduccion') AS T(AsociaDeduccion)
+						DELETE TOP(1) FROM #AsociaDeduccionTemp;
+						SELECT @countAsociaDedu  = COUNT(*) FROM #AsociaDeduccionTemp;
+					END
+
+
+				DROP TABLE #AsociaDeduccionTemp;	
 			END
-		*/
+		
 
 		--Marcas de Asistencias
 		/*
@@ -465,8 +498,10 @@ WHILE @fechaActual<=@ultimaFecha
 --DROP TABLE #JornadaTemp
 --DROP TABLE #MarcasAux
 --DROP TABLE #EmpleadosTemp
-
-
+--DROP TABLE #AsociaDeduccionTemp;	
+SELECT * FROM DeduccionXEmpleado
+SELECT * FROM PlanillaXSemanaxEmpleado
+SELECT * FROM PlanillaXMesxEmpleado
 
 
 

@@ -23,6 +23,7 @@ DBCC CHECKIDENT ('MarcaDeAsistencia', RESEED, 0)
 DBCC CHECKIDENT ('Jornada', RESEED, 0)
 DBCC CHECKIDENT ('SemanaPlanilla', RESEED, 0)
 DBCC CHECKIDENT ('MesPlanilla', RESEED, 0)
+DBCC CHECKIDENT ('DeduccionXEmpleado', RESEED, 0)
 DBCC CHECKIDENT ('PlanillaXSemanaXEmpleado', RESEED, 0)
 DBCC CHECKIDENT ('PlanillaXMesxEmpleado', RESEED, 0)
 
