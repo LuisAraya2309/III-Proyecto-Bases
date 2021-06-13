@@ -415,7 +415,7 @@ WHILE @fechaActual<=@ultimaFecha
 								(
 								@fechaActual,
 								@ganancias,
-								2,
+								3,
 								(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado )
 								)
 							END
