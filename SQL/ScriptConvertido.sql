@@ -36,7 +36,7 @@ EXEC sp_CargarTipoDeduccion @docXML,0;
 
 
 
---Preparar la simulación---------------------------------------------------------------
+--Preparar la simulaciï¿½n---------------------------------------------------------------
 --Se crea una tabla que va a contener una fecha y una operacion, ambos relacionados
 CREATE TABLE #Operaciones(Fecha DATE,Operacion XML);
 
@@ -74,24 +74,61 @@ DECLARE @secInicial INT,@secFinal INT,@secItera INT,@mensajeError VARCHAR(100);
 --Variables para insertar empleados
 
 DECLARE @EmpleadosTemp TABLE(
-						Nombre VARCHAR(64), 
-						ValorDocumentoIdentidad INT,
-						FechaNacimiento DATE,
-						IdPuesto INT,
-						IdDepartamento INT,
-						IdTipoDocumentoIdentidad INT, 
-						NombreUsuario VARCHAR(64),
-						Contraseña VARCHAR(64),
-						Tipo INT,
-						Secuencia INT,
-						ProduceError BIT,
-						Activo BIT
-					)
+	Nombre VARCHAR(64), 
+	ValorDocumentoIdentidad INT,
+	FechaNacimiento DATE,
+	IdPuesto INT,
+	IdDepartamento INT,
+	IdTipoDocumentoIdentidad INT, 
+	NombreUsuario VARCHAR(64),
+	Contraseï¿½a VARCHAR(64),
+	Tipo INT,
+	Secuencia INT,
+	ProduceError BIT,
+	Activo BIT
+	)
 
 DECLARE @Nombre VARCHAR(40), @ValorDocumentoIdentidad INT, @FechaNacimiento DATE, @IdPuesto INT,
-		@IdDepartamento INT,@IdTipoDocumentoIdentidad INT,@NombreUsuario VARCHAR(64),@Contraseña VARCHAR(64), 
-		@produceError BIT 
+	@IdDepartamento INT,@IdTipoDocumentoIdentidad INT,@NombreUsuario VARCHAR(64),@Contraseï¿½a VARCHAR(64), 
+	@produceError BIT 
 
+--Variables para insertar en Jornada
+DECLARE @JornadaTemp TABLE (
+	IdJornada INT,
+	ValorDocIdentidad INT,
+	IdSemanaPlanilla INT
+	)
+
+DECLARE @IdJornada INT, @ValorDocIdentidad INT, @IdSemanaPlanilla INT 
+
+--Variables para eliminar Empleado
+
+DECLARE @EliminacionesEmpleados TABLE(
+	ValorDocIdentidad INT
+	)
+
+DECLARE @ValorDocId  INT
+
+--Asocioar deducciones
+
+DECLARE @AsociaDeduccionTemp TABLE (
+	ValorDocumentoIdentidad INT, 
+	IdTipoDeduccion INT
+	)
+
+DECLARE @ValorDocumentoIdentidad INT, @IdTipoDeduccion INT
+
+--Marcas de Asistencia
+
+DECLARE @MarcasAux TABLE (
+	FechaInicio SMALLDATETIME,
+	FechaFin SMALLDATETIME,
+	IdJornada INT)
+
+DECLARE @fechaInicio SMALLDATETIME , @fechaFin SMALLDATETIME , @idJornada INT , 
+	@idEmpleado INT , @horasTrabajadas INT , @horaFinNormal TIME , 
+	@idTipoJornada INT , @horasExtra INT ,  @salarioXHora INT , 
+	@horasExtrasDoble INT
 
 --INICIO DE LA ITERACION DE OPERACION POR OPERACION
 WHILE @fechaActual<=@ultimaFecha
@@ -107,7 +144,7 @@ WHILE @fechaActual<=@ultimaFecha
 				)
 
 			--Se guarda en una variable de tipo XML el nodo que se va a procesar 
-			--para que el acceso sea más sencillo en las operaciones
+			--para que el acceso sea mï¿½s sencillo en las operaciones
 			DECLARE @nodoActual XML;
 			SELECT @nodoActual = CONVERT(XML,Operacion)
 			FROM
@@ -141,7 +178,7 @@ WHILE @fechaActual<=@ultimaFecha
 							deducciones de la semana que termina. 
 							- Actualizar la instancia de planilla mensual del empleado, respecto de salario 
 							Bruto y TotalDeducciones. 
-							- Determinar si la semana que finaliza es la última del mes, si es así, crear una 
+							- Determinar si la semana que finaliza es la ï¿½ltima del mes, si es asï¿½, crear una 
 							nueva instancia de la planilla mensual del empleado. 
 							- Crear nueva semana para Planilla semanal del empleado. 
 							*/
@@ -167,7 +204,7 @@ WHILE @fechaActual<=@ultimaFecha
 								Item.value('@idDepartamento','INT') AS IdDepartamento,
 								Item.value('@idTipoDocumentacionIdentidad','INT') AS IdTipoDocumentoIdentidad,
 								Item.value('@Username','VARCHAR(64)') AS NombreUsuario,
-								Item.value('@Password','VARCHAR(64)') AS Contraseña,
+								Item.value('@Password','VARCHAR(64)') AS Contraseï¿½a,
 								Item.value('@Secuencia','INT') AS Secuencia,
 								Item.value('@ProduceError','BIT') AS ProduceError,
 								1 AS Tipo,
@@ -188,14 +225,14 @@ WHILE @fechaActual<=@ultimaFecha
 							SELECT @IdDepartamento =  (SELECT TOP(1) IdDepartamento FROM @EmpleadosTemp);
 							SELECT @IdTipoDocumentoIdentidad = (SELECT TOP(1) IdTipoDocumentoIdentidad FROM @EmpleadosTemp);
 							SELECT @NombreUsuario  = (SELECT TOP(1) NombreUsuario FROM @EmpleadosTemp);
-							SELECT @Contraseña  = (SELECT TOP(1) Contraseña FROM @EmpleadosTemp);
+							SELECT @Contraseï¿½a  = (SELECT TOP(1) Contraseï¿½a FROM @EmpleadosTemp);
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @EmpleadosTemp);
 						
 							IF @produceError = 1
 								BEGIN
 									DELETE TOP (1) FROM @EmpleadosTemp
 									SELECT @secItera = @secItera + 1;
-									SELECT @mensajeError = 'Hubo un error en la inserción del empleado de identificación: ' + CONVERT(VARCHAR,@ValorDocumentoIdentidad);
+									SELECT @mensajeError = 'Hubo un error en la inserciï¿½n del empleado de identificaciï¿½n: ' + CONVERT(VARCHAR,@ValorDocumentoIdentidad);
 									
 									--AGREGAR A LA BITACORA EL ERROR
 									INSERT INTO dbo.BitacoraErrores
@@ -216,7 +253,7 @@ WHILE @fechaActual<=@ultimaFecha
 								, @IdDepartamento
 								, @IdTipoDocumentoIdentidad
 								, @NombreUsuario
-								, @Contraseña
+								, @Contraseï¿½a
 								, 0
 
 							INSERT INTO dbo.DetalleCorrida
@@ -240,8 +277,7 @@ WHILE @fechaActual<=@ultimaFecha
 		
 			IF ((SELECT Operacion.exist('Operacion/TipoDeJornadaProximaSemana') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 				BEGIN
-					CREATE TABLE #JornadaTemp(IdJornada INT, ValorDocIdentidad INT, IdSemanaPlanilla INT)
-					INSERT INTO #JornadaTemp
+					INSERT INTO @JornadaTemp
 						SELECT 
 							tipoJornadaProximaSemana.value('@IdJornada','INT') AS idJornada,
 							tipoJornadaProximaSemana.value('@ValorDocumentoIdentidad','INT') AS ValorDocIdentidad ,
@@ -249,13 +285,32 @@ WHILE @fechaActual<=@ultimaFecha
 
 						FROM @nodoActual.nodes('Operacion/TipoDeJornadaProximaSemana') AS T(tipoJornadaProximaSemana)
 
-					DECLARE @countJornadaTemp INT;
-					SELECT @countJornadaTemp = COUNT(*) FROM #JornadaTemp;
-					WHILE @countJornadaTemp > 0
+					SELECT @secInicial = MIN(Secuencia) , @secFinal = MAX(Secuencia) FROM @JornadaTemp;
+					SELECT @secItera = @secInicial;
+
+					WHILE @secItera<=@secFinal 
 						BEGIN
-							DECLARE @IdJornada INT = (SELECT TOP(1) IdJornada FROM #JornadaTemp)
-							DECLARE @ValorDocIdentidad INT =  (SELECT TOP(1) ValorDocIdentidad FROM #JornadaTemp)
-							DECLARE @IdSemanaPlanilla INT = (SELECT TOP(1) IdSemanaPlanilla FROM #JornadaTemp)
+							SELECT @IdJornada = (SELECT TOP(1) IdJornada FROM @JornadaTemp)
+							SELECT @ValorDocIdentidad =  (SELECT TOP(1) ValorDocIdentidad FROM @JornadaTemp)
+							SELECT @IdSemanaPlanilla = (SELECT TOP(1) IdSemanaPlanilla FROM @JornadaTemp)
+							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @JornadaTemp);
+
+							IF @produceError = 1
+								BEGIN
+									DELETE TOP (1) FROM @JornadaTemp
+									SELECT @secItera = @secItera + 1;
+									SELECT @mensajeError = 'Hubo un error en la inserciï¿½n de la jornada proxima semana del empleado con valor de documento de identidad: ' + CONVERT(VARCHAR,@ValorDocIdentidad);
+									
+									--AGREGAR A LA BITACORA EL ERROR
+									INSERT INTO dbo.BitacoraErrores
+										VALUES
+										(
+										@fechaActual,
+										@mensajeError
+										)
+								
+									CONTINUE;
+								END
 
 							EXEC sp_InsertarJornadaProximaSemana
 								@IdJornada
@@ -263,10 +318,18 @@ WHILE @fechaActual<=@ultimaFecha
 								, @IdSemanaPlanilla
 								, 0 
 
-							DELETE TOP (1) FROM #JornadaTemp
-							SELECT @countJornadaTemp = COUNT(*) FROM #JornadaTemp;
+							INSERT INTO dbo.DetalleCorrida
+								VALUES
+								(
+								(SELECT MAX(Id) FROM dbo.Corrida),
+								5,
+								@secItera
+								)
+
+							DELETE TOP (1) FROM @JornadaTemp
+							SELECT @secItera = @secItera + 1;
 						END
-					DROP TABLE #JornadaTemp
+					DELETE FROM @JornadaTemp
 				END
 		
 			--Eliminar Empleado
@@ -274,65 +337,113 @@ WHILE @fechaActual<=@ultimaFecha
 			IF ((SELECT Operacion.exist('Operacion/EliminarEmpleado') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 
 				BEGIN
-
-					CREATE TABLE #EliminacionesEmpleados(ValorDocIdentidad INT);
-					INSERT INTO #EliminacionesEmpleados
+					INSERT INTO @EliminacionesEmpleados
 						SELECT 
 							Item.value('@ValorDocumentoIdentidad','INT') as valorDocIdentidad 
 						FROM @nodoActual.nodes('Operacion/EliminarEmpleado') AS T(Item)
 					
-					
-					DECLARE @countEliminar INT;
-					SELECT @countEliminar = COUNT(*) FROM #EliminacionesEmpleados;
-				
-					WHILE @countEliminar>0
+					SELECT @secInicial = MIN(Secuencia) , @secFinal = MAX(Secuencia) FROM @EliminacionesEmpleados;
+					SELECT @secItera = @secInicial;
+
+					WHILE @secItera<=@secFinal 
 						BEGIN
-							DECLARE @ValorDocId  INT = (SELECT TOP(1) ValorDocIdentidad FROM #EliminacionesEmpleados)
-						
+							SELECT @ValorDocId = (SELECT TOP(1) ValorDocIdentidad FROM @EliminacionesEmpleados)
+							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @EliminacionesEmpleados);
+
+							IF @produceError = 1
+								BEGIN
+									DELETE TOP (1) FROM @EliminacionesEmpleados
+									SELECT @secItera = @secItera + 1;
+									SELECT @mensajeError = 'Hubo un error eliminando al empleado con valor de documento de identidad: ' + CONVERT(VARCHAR,@ValorDocId);
+									
+									--AGREGAR A LA BITACORA EL ERROR
+									INSERT INTO dbo.BitacoraErrores
+										VALUES
+										(
+										@fechaActual,
+										@mensajeError
+										)
+								
+									CONTINUE;
+								END
+
 							EXEC sp_EliminarEmpleados
 								@ValorDocId
 								, 0
 
-							DELETE TOP (1) FROM #EliminacionesEmpleados
-							SELECT @countEliminar = COUNT(*) FROM #EliminacionesEmpleados;
+							INSERT INTO dbo.DetalleCorrida
+								VALUES
+								(
+								(SELECT MAX(Id) FROM dbo.Corrida),
+								2,
+								@secItera
+								)
+
+							DELETE TOP (1) FROM @EliminacionesEmpleados
+							SELECT @secItera = @secItera + 1;
 						END
 				
-					DROP TABLE #EliminacionesEmpleados;
+					DELETE FROM @EliminacionesEmpleados;
 
 				END
 		
 		
 		
 			IF ((SELECT Operacion.exist('Operacion/AsociaEmpleadoConDeduccion') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
-
 				BEGIN
-					CREATE TABLE #AsociaDeduccionTemp(ValorDocumentoIdentidad INT,IdTipoDeduccion INT);
-					INSERT INTO #AsociaDeduccionTemp
-							SELECT 
-								AsociaDeduccion.value('@ValorDocumentoIdentidad','INT'),
-								AsociaDeduccion.value('@IdDeduccion','INT')
-							
-				
+					INSERT INTO @AsociaDeduccionTemp
+						SELECT 
+							AsociaDeduccion.value('@ValorDocumentoIdentidad','INT'),
+							AsociaDeduccion.value('@IdDeduccion','INT')
+						
 					FROM @nodoActual.nodes('Operacion/AsociaEmpleadoConDeduccion') AS T(AsociaDeduccion)
 				
-					DECLARE @countAsociaDedu INT;
-					SELECT @countAsociaDedu  = COUNT(*) FROM #AsociaDeduccionTemp;
-				
-					WHILE @countAsociaDedu>0
+					SELECT @secInicial = MIN(Secuencia) , @secFinal = MAX(Secuencia) FROM @AsociaDeduccionTemp;
+					SELECT @secItera = @secInicial;
+
+					WHILE @secItera<=@secFinal 
 						BEGIN
-							DECLARE @fechaInicioDedu DATE = (SELECT FechaInicio FROM SemanaPlanilla WHERE Id = (SELECT MAX(Id) FROM SemanaPlanilla) );
-							DECLARE @idEmpleado INT = (SELECT Id FROM Empleados WHERE ValorDocumentoIdentidad = 
-																				(SELECT TOP (1) ValorDocumentoIdentidad FROM #AsociaDeduccionTemp));
-							DECLARE @idTipoDeduccion INT = (SELECT TOP(1) IdTipoDeduccion FROM #AsociaDeduccionTemp);
+							SELECT @fechaInicioDedu  = (SELECT FechaInicio FROM SemanaPlanilla WHERE Id = (SELECT MAX(Id) FROM SemanaPlanilla) );
+							SELECT @idEmpleado  = (SELECT Id FROM Empleados WHERE ValorDocumentoIdentidad = (SELECT TOP (1) ValorDocumentoIdentidad FROM @AsociaDeduccionTemp));
+							SELECT @idTipoDeduccion  = (SELECT TOP(1) IdTipoDeduccion FROM @AsociaDeduccionTemp);
+							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @AsociaDeduccionTemp);
+
+							IF @produceError = 1
+								BEGIN
+									DELETE TOP (1) FROM @AsociaDeduccionTemp
+									SELECT @secItera = @secItera + 1;
+									SELECT @mensajeError = 'Hubo un error asociando al empleado con valor de documento de identidad ' + CONVERT(VARCHAR,@ValorDocId) + ' con la deduccion de tipo '+ CONVERT(VARCHAR, @idTipoDeduccion);
+									
+									--AGREGAR A LA BITACORA EL ERROR
+									INSERT INTO dbo.BitacoraErrores
+										VALUES
+										(
+										@fechaActual,
+										@mensajeError
+										)
+								
+									CONTINUE;
+								END
+
+
 							INSERT INTO DeduccionXEmpleado(FechaInicio,IdEmpleado,IdTipoDeduccion)
-								SELECT @fechaInicioDedu,@idEmpleado,@idTipoDeduccion
+								SELECT 
+									@fechaInicioDedu,
+									@idEmpleado,
+									@idTipoDeduccion
 
-							DELETE TOP(1) FROM #AsociaDeduccionTemp;
-							SELECT @countAsociaDedu  = COUNT(*) FROM #AsociaDeduccionTemp;
+							INSERT INTO dbo.DetalleCorrida
+								VALUES
+								(
+								(SELECT MAX(Id) FROM dbo.Corrida),
+								3,
+								@secItera
+								)
+
+							DELETE TOP (1) FROM @AsociaDeduccionTemp
+							SELECT @secItera = @secItera + 1;
 						END
-
-
-					DROP TABLE #AsociaDeduccionTemp;	
+					DELETE FROM @AsociaDeduccionTemp;	
 				END
 		
 
@@ -340,42 +451,46 @@ WHILE @fechaActual<=@ultimaFecha
 			/*
 			IF ((SELECT Operacion.exist('Operacion/MarcaDeAsistencia') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 				BEGIN
-					CREATE TABLE #MarcasAux (FechaInicio SMALLDATETIME,FechaFin SMALLDATETIME,IdJornada INT);
-					INSERT INTO #MarcasAux
+					INSERT INTO @MarcasAux
 						SELECT
 							marcaAsistencia.value('@FechaEntrada','SMALLDATETIME') AS fechaEntrada,
 							marcaAsistencia.value('@FechaSalida','SMALLDATETIME') AS fechaSalida,
-							(SELECT TOP 1 J.id 
+							(SELECT TOP 1 
+								J.id 
 							FROM dbo.Jornada AS J 
-							WHERE J.IdEmpleado IN (SELECT TOP 1 E.Id 
-													FROM dbo.Empleados AS E 
-													WHERE E.ValorDocumentoIdentidad = marcaAsistencia.value('@ValorDocumentoIdentidad','INT')))
+							WHERE 
+								J.IdEmpleado IN (SELECT TOP 1 
+													E.Id 
+												FROM dbo.Empleados AS E 
+												WHERE 
+													E.ValorDocumentoIdentidad = marcaAsistencia.value('@ValorDocumentoIdentidad','INT')))
 
 						FROM @nodoActual.nodes('Operacion/MarcaDeAsistencia') AS T(marcaAsistencia)
 
-					DECLARE @countMarcasAux INT;
-					SELECT @countMarcasAux = COUNT(*) FROM #MarcasAux;
+					SELECT @secInicial = MIN(Secuencia) , @secFinal = MAX(Secuencia) FROM @MarcasAux;
+					SELECT @secItera = @secInicial;
 
-					WHILE @countMarcasAux>0
+					WHILE @secItera<=@secFinal 
 						BEGIN
-							DECLARE @fechaInicio SMALLDATETIME =  CONVERT(TIME,(SELECT TOP(1) FechaInicio FROM #MarcasAux));
-							DECLARE @fechaFin SMALLDATETIME =  CONVERT(TIME,(SELECT TOP(1) FechaFin FROM #MarcasAux));
-							DECLARE @idJornada INT = (SELECT TOP(1) IdJornada FROM #MarcasAux);
-							DECLARE @idEmpleado INT = (SELECT IdEmpleado FROM Jornada WHERE Jornada.Id = @idJornada);
-							DECLARE @horasTrabajadas INT = DATEDIFF(HOUR,@fechaInicio,@fechaFin); --Calcula las horas trabajadas en la sesion
-							DECLARE @horaFinNormal TIME;
-							DECLARE @idTipoJornada INT = (SELECT Jornada.IdTipoJornada FROM Jornada WHERE  Id =  @idJornada );
-							DECLARE	@horasExtra INT = 0; DECLARE @horasExtrasDoble INT = 0; DECLARE @ganancias INT = 0;
-							DECLARE @salarioXHora INT = (
-														SELECT SalarioXHora FROM Puestos WHERE Puestos.Id = (SELECT IdPuesto FROM Empleados WHERE Empleados.Id = @idEmpleado)
-														);
+							SELECT @fechaInicio  =  CONVERT(TIME,(SELECT TOP(1) FechaInicio FROM @MarcasAux));
+							SELECT @fechaFin  =  CONVERT(TIME,(SELECT TOP(1) FechaFin FROM @MarcasAux));
+							SELECT @idJornada  = (SELECT TOP(1) IdJornada FROM @MarcasAux);
+							SELECT @idEmpleado  = (SELECT IdEmpleado FROM Jornada WHERE Jornada.Id = @idJornada);
+							SELECT @horasTrabajadas  = DATEDIFF(HOUR,@fechaInicio,@fechaFin); --Calcula las horas trabajadas en la sesion
+							SELECT @idTipoJornada  = (SELECT Jornada.IdTipoJornada FROM Jornada WHERE  Id =  @idJornada );
+							SELECT	@horasExtra  = 0; @horasExtrasDoble = 0; DECLARE @ganancias INT = 0;
+							SELECT @salarioXHora  = (SELECT 
+														SalarioXHora 
+													FROM Puestos 
+													WHERE 
+														Puestos.Id = (SELECT IdPuesto FROM Empleados WHERE Empleados.Id = @idEmpleado));
 							SELECT @horaFinNormal = (
 								CONVERT(
 									SMALLDATETIME,
 									(SELECT HoraFin FROM TipoJornada WHERE Id = @idTipoJornada)  
 									)
 							);
-
+							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @MarcasAux);
 							IF (DATEPART(WEEKDAY,@fechaActual) = 7) OR (@fechaActual IN (SELECT Fecha FROM Feriados)) --Si es domingo o la fecha es un feriado son horas extra dobles
 								BEGIN
 									SELECT @horasExtrasDoble = DATEDIFF(HOUR,@horaFinNormal,@fechaFin); 
@@ -388,6 +503,23 @@ WHILE @fechaActual<=@ultimaFecha
 							SELECT @horasTrabajadas = @horasTrabajadas-@horasExtra-@horasExtrasDoble;
 
 							SELECT @ganancias = (@salarioXHora*@horasTrabajadas) + (@salarioXHora*1.5*@horasExtra) + (@salarioXHora*2*@horasExtrasDoble);
+
+							IF @produceError = 1
+								BEGIN
+									DELETE TOP (1) FROM @MarcasAux
+									SELECT @secItera = @secItera + 1;
+									SELECT @mensajeError = 'Hubo un error' ;
+									
+									--AGREGAR A LA BITACORA EL ERROR
+									INSERT INTO dbo.BitacoraErrores
+										VALUES
+										(
+										@fechaActual,
+										@mensajeError
+										)
+								
+									CONTINUE;
+								END
 						
 							INSERT INTO dbo.MarcaDeAsistencia
 								VALUES
@@ -436,10 +568,18 @@ WHILE @fechaActual<=@ultimaFecha
 
 
 							SELECT @idTipoJornada,@horasTrabajadas,@horasExtra,@horasExtrasDoble,@salarioXHora,@ganancias;
-							DELETE TOP(1) FROM #MarcasAux
-							SELECT @countMarcasAux = COUNT(*) FROM #MarcasAux;
+							INSERT INTO dbo.DetalleCorrida
+								VALUES
+								(
+								(SELECT MAX(Id) FROM dbo.Corrida),
+								6,
+								@secItera
+								)
+
+							DELETE TOP (1) FROM @MarcasAux
+							SELECT @secItera = @secItera + 1;
 						END
-					DROP TABLE #MarcasAux
+					DELETE FROM @MarcasAux
 				
 				
 				END
