@@ -16,6 +16,8 @@ delete from Feriados;
 delete from Errores
 delete from PlanillaXSemanaxEmpleado;
 delete from PlanillaXMesxEmpleado;
+delete from DetalleCorrida;
+delete from Corrida;
 
 --IDENTITY
 DBCC CHECKIDENT ('Empleados', RESEED, 0)
