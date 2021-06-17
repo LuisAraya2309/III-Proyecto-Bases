@@ -23,6 +23,7 @@ AS
 		VALUES
 		(
 			0,
+			0,
 			(SELECT Id  FROM inserted),
 			(SELECT MAX(Id) AS ID FROM dbo.SemanaPlanilla),
 			(SELECT MAX(Id) AS ID FROM dbo.MesPlanilla)

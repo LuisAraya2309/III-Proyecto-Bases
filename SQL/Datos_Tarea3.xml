@@ -66,6 +66,7 @@
     </Usuarios>
 
 
+
     <Operacion Fecha="2020-11-05">
         <NuevoEmpleado ValorDocumentoIdentidad="96311578" Nombre="Maria Jose Benitez Morales" idTipoDocumentacionIdentidad="1" idPuesto="8" idDepartamento="4" FechaNacimiento="1990-06-06" Username="MBenitez" Password="4050" Secuencia="1" ProduceError="0" />
         <NuevoEmpleado ValorDocumentoIdentidad="52070737" Nombre="Cristobal Montero Moya" idTipoDocumentacionIdentidad="2" idPuesto="7" idDepartamento="4" FechaNacimiento="1983-11-20" Username="CMontero" Password="3261" Secuencia="2" ProduceError="0" />
