@@ -21,6 +21,9 @@ delete from PlanillaXMesxEmpleado;
 delete from DetalleCorrida;
 delete from Corrida;
 delete from BitacoraErrores;
+delete from MovimientoDeHoras;
+delete from MovimientoPlanilla;
+
 
 --IDENTITY
 DBCC CHECKIDENT ('Empleados', RESEED, 0)

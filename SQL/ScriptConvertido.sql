@@ -1,6 +1,6 @@
 USE SistemaObrero;
 SET LANGUAGE Spanish;
-
+SET NOCOUNT ON;
 --CARGA EL XML
 
 DECLARE @docXML XML = (SELECT dbo.CargarXML())
@@ -152,8 +152,8 @@ DECLARE @MarcasAux TABLE (
 DECLARE @fechaInicio SMALLDATETIME , @fechaFin SMALLDATETIME, 
 	@idEmpleado INT , @horasTrabajadas INT , @horaFinNormal TIME , 
 	@idTipoJornada INT , @horasExtra INT ,  @salarioXHora INT , 
-	@horasExtrasDoble INT, @gananciasOrdinarias INT, @ganaciasExtra INT,
-	@gananciasExtraDoble INT;
+	@horasExtrasDoble INT, @gananciasOrdinarias FLOAT, @ganaciasExtra FLOAT,
+	@gananciasExtraDoble FLOAT;
 
 
 
@@ -253,7 +253,7 @@ WHILE @fechaActual<=@ultimaFecha
 							SELECT @NombreUsuario  = (SELECT TOP(1) NombreUsuario FROM @EmpleadosTemp);
 							SELECT @Contraseña  = (SELECT TOP(1) Contraseña FROM @EmpleadosTemp);
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @EmpleadosTemp);
-							SELECT * FROM @EmpleadosTemp;
+							
 							IF @produceError = 1
 								BEGIN
 									PRINT('Entro')
@@ -481,7 +481,7 @@ WHILE @fechaActual<=@ultimaFecha
 									VALUES
 									(
 									(SELECT MAX(Id) FROM dbo.DeduccionXEmpleado),
-									(CONVERT(INT,@montoDeduccion))
+									(CONVERT(FLOAT,@montoDeduccion))
 									)
 							ELSE
 								INSERT INTO dbo.DeduccionXEmpleadoNoObligatoriaPorcentual
@@ -570,6 +570,7 @@ WHILE @fechaActual<=@ultimaFecha
 			
 			IF ((SELECT Operacion.exist('Operacion/MarcaDeAsistencia') FROM #Operaciones WHERE Fecha = @fechaActual)=1)
 				BEGIN
+					
 					INSERT INTO @MarcasAux
 						SELECT
 							marcaAsistencia.value('@FechaEntrada','SMALLDATETIME') AS fechaEntrada,
@@ -582,10 +583,14 @@ WHILE @fechaActual<=@ultimaFecha
 													E.Id 
 												FROM dbo.Empleados AS E 
 												WHERE 
-													E.ValorDocumentoIdentidad = marcaAsistencia.value('@ValorDocumentoIdentidad','INT')))
+													E.ValorDocumentoIdentidad = marcaAsistencia.value('@ValorDocumentoIdentidad','INT'))),
+							marcaAsistencia.value('@Secuencia','INT') AS Secuencia,
+							marcaAsistencia.value('@ProduceError','BIT') AS ProduceError
+
 
 						FROM @nodoActual.nodes('Operacion/MarcaDeAsistencia') AS T(marcaAsistencia)
 
+					
 					SELECT @secInicial = MIN(Secuencia) , @secFinal = MAX(Secuencia) FROM @MarcasAux;
 					SELECT @secItera = @secInicial;
 
@@ -597,7 +602,7 @@ WHILE @fechaActual<=@ultimaFecha
 							SELECT @idEmpleado  = (SELECT IdEmpleado FROM Jornada WHERE Jornada.Id = @idJornada);
 							SELECT @horasTrabajadas  = DATEDIFF(HOUR,@fechaInicio,@fechaFin); --Calcula las horas trabajadas en la sesion
 							SELECT @idTipoJornada  = (SELECT Jornada.IdTipoJornada FROM Jornada WHERE  Id =  @idJornada );
-							SELECT	@horasExtra  = 0, @horasExtrasDoble = 0; 
+							SELECT @horasExtra  = 0, @horasExtrasDoble = 0; 
 							SELECT @salarioXHora  = (SELECT 
 														SalarioXHora 
 													FROM Puestos 
@@ -655,7 +660,7 @@ WHILE @fechaActual<=@ultimaFecha
 
 							--Extra Doble
 							SELECT @gananciasExtraDoble = (@salarioXHora*2*@horasExtrasDoble);
-
+							
 							--Inserta la marca de asistencia
 							INSERT INTO dbo.MarcaDeAsistencia
 								VALUES
@@ -736,8 +741,9 @@ WHILE @fechaActual<=@ultimaFecha
 								END
 
 
-								IF DATEPART(WEEKDAY,@fechaActual) = 'Jueves'
+								IF DATENAME(WEEKDAY,@fechaActual) = 'Jueves'
 									BEGIN
+									
 										INSERT INTO @empleadosDeducciones(Id,FechaInicio,FechaFin,IdEmpleado,IdTipoDeduccion)
 											SELECT Id,FechaInicio,FechaFin,IdEmpleado,IdTipoDeduccion
 											FROM dbo.DeduccionXEmpleado AS DE 
@@ -751,7 +757,7 @@ WHILE @fechaActual<=@ultimaFecha
 												/*
 												IF @idDE = (SELECT MAX(Id) FROM FijaNoObligatoria)
 													SELECT @montoDeduccionED = (SELECT FO.Monto FROM FijaNoObligatoria AS FO WHERE FO.Id = @idDE );
-						
+												CAMBIAR MONTOS DE SALARIOS A FLOATS
 												*/
 
 												DELETE TOP(1) FROM @empleadosDeducciones;
@@ -774,7 +780,7 @@ WHILE @fechaActual<=@ultimaFecha
 									- Crear nueva semana para Planilla semanal del empleado. 
 								*/
 						
-
+							
 							INSERT INTO dbo.DetalleCorrida
 								VALUES
 								(
@@ -786,6 +792,7 @@ WHILE @fechaActual<=@ultimaFecha
 							DELETE TOP (1) FROM @MarcasAux
 							SELECT @secItera = @secItera + 1;
 						END
+						
 					DELETE FROM @MarcasAux
 							
 				
@@ -797,8 +804,7 @@ WHILE @fechaActual<=@ultimaFecha
 			SET @fechaActual =  DATEADD(DAY,1,@fechaActual);
 		
 		END
-
+SET NOCOUNT OFF;
 DROP TABLE #Operaciones
 
-SELECT * FROM FijaNoObligatoria;
-SELECT *FROM DeduccionXEmpleadoNoObligatoriaPorcentual;
+

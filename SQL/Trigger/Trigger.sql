@@ -14,20 +14,21 @@ AS
 	INSERT INTO PlanillaXMesxEmpleado
 		VALUES
 		(
-			0,
-			0,
+			0.0,
+			0.0,
 			(SELECT MAX(Id) AS ID FROM dbo.MesPlanilla)
 		)
 
 	INSERT INTO PlanillaXSemanaxEmpleado
 		VALUES
 		(
-			0,
-			0,
+			0.0,
+			0.0,
 			(SELECT Id  FROM inserted),
 			(SELECT MAX(Id) AS ID FROM dbo.SemanaPlanilla),
 			(SELECT MAX(Id) AS ID FROM dbo.MesPlanilla)
 
 		)
 
+--Use SistemaObrero
 --DROP TRIGGER Tr_SemanaPlanillaDeduccion 

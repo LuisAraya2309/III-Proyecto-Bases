@@ -29,7 +29,7 @@ BEGIN
 				INSERT INTO TipoMovimientoPlanilla
 
 						SELECT
-							tipoMovimiento.value('@Nombre','VARCHAR(40)') AS nombre
+							tipoMovimiento.value('@Nombre','VARCHAR(50)') AS nombre
                 
 						FROM @inDocXML.nodes('Datos/Catalogos/TiposDeMovimiento/TipoMovimiento') AS A(tipoMovimiento)
 						

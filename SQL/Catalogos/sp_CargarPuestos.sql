@@ -30,7 +30,7 @@ BEGIN
 					SELECT
 						puesto.value('@Id','INT') AS id,
 						puesto.value('@Nombre','VARCHAR(40)') AS Nombre,
-						puesto.value('@SalarioXHora','INT') AS salarioxHora,
+						puesto.value('@SalarioXHora','FLOAT') AS salarioxHora,
 						1 AS activo  
                 
 					FROM @inDocXML.nodes('Datos/Catalogos/Puestos/Puesto') AS T(puesto)
@@ -61,3 +61,4 @@ BEGIN
 
 END
 GO
+
