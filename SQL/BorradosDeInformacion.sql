@@ -37,6 +37,7 @@ DBCC CHECKIDENT ('PlanillaXMesxEmpleado', RESEED, 0)
 DBCC CHECKIDENT ('Corrida', RESEED, 0)
 DBCC CHECKIDENT ('DetalleCorrida', RESEED, 0)
 DBCC CHECKIDENT ('BitacoraErrores', RESEED, 0)
+DBCC CHECKIDENT ('MovimientoPlanilla', RESEED, 0)
 
 --STORED PROCEDURES
 /*DROP PROCEDURE sp_InsertarTipoJornadaProximaSemana*/

@@ -31,7 +31,7 @@ BEGIN
 						SELECT
 							tipoMovimiento.value('@Nombre','VARCHAR(50)') AS nombre
                 
-						FROM @inDocXML.nodes('Datos/Catalogos/TiposDeMovimiento/TipoMovimiento') AS A(tipoMovimiento)
+						FROM @inDocXML.nodes('Datos/Catalogos/TiposDeMovimiento/TipoDeMovimiento') AS A(tipoMovimiento)
 						
 
 			COMMIT TRANSACTION TSaveMov;

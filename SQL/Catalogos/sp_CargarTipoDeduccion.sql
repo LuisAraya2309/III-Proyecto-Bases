@@ -51,6 +51,7 @@ BEGIN
 								BEGIN
 									IF EXISTS(SELECT TOP (1) * FROM #TipoDeduccionTemporal AS TD WHERE TD.esObligatorio = 'Si')
 										BEGIN
+											BEGIN TRANSACTION TSaveMov
 											INSERT INTO DeduccionPorcentualObligatoria
 											VALUES(
 											(SELECT TOP (1)  id FROM #TipoDeduccionTemporal AS TD)

@@ -6,6 +6,7 @@ SET NOCOUNT ON;
 DECLARE @docXML XML = (SELECT dbo.CargarXML())
 
 
+
 -- C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea3.xml
 	-- C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea3.xml
 
@@ -150,7 +151,7 @@ DECLARE @MarcasAux TABLE (
 	ProduceError BIT)
 
 DECLARE @fechaInicio SMALLDATETIME , @fechaFin SMALLDATETIME, 
-	@idEmpleado INT , @horasTrabajadas INT , @horaFinNormal TIME , 
+	@idEmpleado INT , @horasTrabajadas INT , @horaFinNormal TIME(0) , 
 	@idTipoJornada INT , @horasExtra INT ,  @salarioXHora INT , 
 	@horasExtrasDoble INT, @gananciasOrdinarias FLOAT, @ganaciasExtra FLOAT,
 	@gananciasExtraDoble FLOAT;
@@ -168,7 +169,7 @@ DECLARE @empleadosDeducciones TABLE(
 
 DECLARE @idDE INT,@idEmpleadoDE INT, @fechaInicioDE DATE, @fechaFinDE DATE, @idTipoDeduccionDE INT, @iterarED INT, @montoDeduccionED INT;
 --INICIO DE LA ITERACION DE OPERACION POR OPERACION
-WHILE @fechaActual<=@ultimaFecha
+WHILE @fechaActual<='2020-11-06'
 		BEGIN
 
 			--Crea una instancia de Corrida
@@ -253,7 +254,7 @@ WHILE @fechaActual<=@ultimaFecha
 							SELECT @NombreUsuario  = (SELECT TOP(1) NombreUsuario FROM @EmpleadosTemp);
 							SELECT @Contraseña  = (SELECT TOP(1) Contraseña FROM @EmpleadosTemp);
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @EmpleadosTemp);
-							
+							/*
 							IF @produceError = 1
 								BEGIN
 									PRINT('Entro')
@@ -271,7 +272,7 @@ WHILE @fechaActual<=@ultimaFecha
 								
 									CONTINUE;
 								END
-
+							*/
 							EXEC sp_InsertarEmpleado
 								@Nombre
 								, @ValorDocumentoIdentidad
@@ -443,7 +444,7 @@ WHILE @fechaActual<=@ultimaFecha
 							SELECT @montoDeduccion = (SELECT TOP(1) Monto FROM @AsociaDeduccionTemp);
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @AsociaDeduccionTemp);
 
-							IF @produceError = 1
+							IF (@produceError = 1)
 								BEGIN
 									DELETE TOP (1) FROM @AsociaDeduccionTemp
 									SELECT @secItera = @secItera + 1;
@@ -596,8 +597,8 @@ WHILE @fechaActual<=@ultimaFecha
 
 					WHILE @secItera<=@secFinal 
 						BEGIN
-							SELECT @fechaInicio  =  CONVERT(TIME,(SELECT TOP(1) FechaInicio FROM @MarcasAux));
-							SELECT @fechaFin  =  CONVERT(TIME,(SELECT TOP(1) FechaFin FROM @MarcasAux));
+							SELECT @fechaInicio  =  CONVERT(SMALLDATETIME,(SELECT TOP(1) FechaInicio FROM @MarcasAux));
+							SELECT @fechaFin  =  CONVERT(SMALLDATETIME,(SELECT TOP(1) FechaFin FROM @MarcasAux));
 							SELECT @idJornada  = (SELECT TOP(1) IdJornada FROM @MarcasAux);
 							SELECT @idEmpleado  = (SELECT IdEmpleado FROM Jornada WHERE Jornada.Id = @idJornada);
 							SELECT @horasTrabajadas  = DATEDIFF(HOUR,@fechaInicio,@fechaFin); --Calcula las horas trabajadas en la sesion
@@ -610,45 +611,25 @@ WHILE @fechaActual<=@ultimaFecha
 														Puestos.Id = (SELECT IdPuesto FROM Empleados WHERE Empleados.Id = @idEmpleado));
 							SELECT @horaFinNormal = (
 								CONVERT(
-									SMALLDATETIME,
+									TIME(0),
 									(SELECT HoraFin FROM TipoJornada WHERE Id = @idTipoJornada)  
 									)
 							);
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @MarcasAux);
-							IF @produceError=1
-								BEGIN
-									DELETE TOP (1) FROM @MarcasAux
-									SELECT @secItera = @secItera + 1;
-									SELECT @mensajeError = 'Hubo un error procesando la marca de asistencia del empleado ' + CONVERT(VARCHAR,@idEmpleado);
-									
-									--AGREGAR A LA BITACORA EL ERROR
-									INSERT INTO dbo.BitacoraErrores
-										VALUES
-										(
-										@fechaActual,
-										@mensajeError
-										)
-								
-									CONTINUE;
-								END
 
-
-
+							
 							IF (DATEPART(WEEKDAY,@fechaActual) = 7) OR (@fechaActual IN (SELECT Fecha FROM Feriados)) --Si es domingo o la fecha es un feriado son horas extra dobles
 								BEGIN
-									SELECT @horasExtrasDoble = DATEDIFF(HOUR,@horaFinNormal,@fechaFin); 
-								END
-
-							SELECT @horasExtra = DATEDIFF(HOUR,@horaFinNormal,@fechaFin);
-
-							IF @horasExtrasDoble>0
-								BEGIN
+									SELECT @horasExtrasDoble = DATEDIFF(HOUR,@horaFinNormal,CONVERT(TIME(0),@fechaFin));
 									SELECT @horasExtra = 0;
+									SELECT @horasTrabajadas = @horasTrabajadas - @horasExtrasDoble;
 								END
-
-							SELECT @horasTrabajadas = @horasTrabajadas-@horasExtra-@horasExtrasDoble;
-
-							--SELECT @ganancias = (@salarioXHora*@horasTrabajadas) + (@salarioXHora*1.5*@horasExtra) + (@salarioXHora*2*@horasExtrasDoble);
+							ELSE
+								BEGIN
+									SELECT @horasExtra = DATEDIFF(HOUR,@horaFinNormal,CONVERT(TIME(0),@fechaFin));
+									SELECT @horasExtrasDoble = 0;
+									SELECT @horasTrabajadas = @horasTrabajadas - @horasExtra;
+								END
 							
 							--CALCULAR LAS GANANCIAS POR HORA
 							
@@ -660,7 +641,8 @@ WHILE @fechaActual<=@ultimaFecha
 
 							--Extra Doble
 							SELECT @gananciasExtraDoble = (@salarioXHora*2*@horasExtrasDoble);
-							
+
+							SELECT @gananciasOrdinarias,@ganaciasExtra,@gananciasExtraDoble;
 							--Inserta la marca de asistencia
 							INSERT INTO dbo.MarcaDeAsistencia
 								VALUES
@@ -669,29 +651,31 @@ WHILE @fechaActual<=@ultimaFecha
 								@fechaFin,                             
 								@idJornada
 								)
-							IF @horasExtra = 0 AND @horasExtrasDoble = 0
-								BEGIN
-									--MOVIMIENTO DE HORAS ORDINARIAS
-									INSERT INTO dbo.MovimientoPlanilla
-										VALUES
-										(
-										@fechaActual,
-										@gananciasOrdinarias,
-										1,
-										(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado)
-										)
+							
+							
+							--MOVIMIENTO DE HORAS ORDINARIAS
+							INSERT INTO dbo.MovimientoPlanilla
+								VALUES
+								(
+								@fechaActual,
+								@gananciasOrdinarias,
+								1,
+								(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado AS PS WHERE PS.IdEmpleado = @idEmpleado)
+								)
 
-									INSERT INTO dbo.MovimientoDeHoras
-										VALUES
-										(
-										(SELECT MAX(Id) FROM dbo.MovimientoPlanilla),
-										(SELECT MAX(Id) FROM dbo.MarcaDeAsistencia),
-										@horasTrabajadas,
-										@horasExtra,
-										@horasExtrasDoble
-										)
+							UPDATE dbo.PlanillaXSemanaxEmpleado
+								SET SalarioBruto = SalarioBruto + @gananciasOrdinarias
+								WHERE PlanillaXSemanaxEmpleado.IdEmpleado = @idEmpleado;
 
-								END
+							INSERT INTO dbo.MovimientoDeHoras
+								VALUES
+								(
+								(SELECT MAX(Id) FROM dbo.MovimientoPlanilla),
+								(SELECT MAX(Id) FROM dbo.MarcaDeAsistencia),
+								@horasTrabajadas
+								)
+
+								
 
 							IF @horasExtra>0 AND @horasExtrasDoble = 0
 								BEGIN
@@ -702,17 +686,19 @@ WHILE @fechaActual<=@ultimaFecha
 										@fechaActual,
 										@ganaciasExtra,
 										2,
-										(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado )
+										(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado AS PS WHERE PS.IdEmpleado = @idEmpleado )
 										)
+
+									UPDATE dbo.PlanillaXSemanaxEmpleado
+										SET SalarioBruto = SalarioBruto + @ganaciasExtra
+										WHERE PlanillaXSemanaxEmpleado.IdEmpleado = @idEmpleado;
 
 									INSERT INTO dbo.MovimientoDeHoras
 										VALUES
 										(
 										(SELECT MAX(Id) FROM dbo.MovimientoPlanilla),
 										(SELECT MAX(Id) FROM dbo.MarcaDeAsistencia),
-										@horasTrabajadas,
-										@horasExtra,
-										@horasExtrasDoble
+										@horasExtra
 										)
 								END
 
@@ -725,78 +711,35 @@ WHILE @fechaActual<=@ultimaFecha
 									@fechaActual,
 									@gananciasExtraDoble,
 									3,
-									(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado )
+									(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado  AS PS WHERE PS.IdEmpleado = @idEmpleado)
 									)
+
+									UPDATE dbo.PlanillaXSemanaxEmpleado
+										SET SalarioBruto = SalarioBruto + @gananciasExtraDoble
+										WHERE PlanillaXSemanaxEmpleado.IdEmpleado = @idEmpleado;
 
 									INSERT INTO dbo.MovimientoDeHoras
 										VALUES
 										(
 										(SELECT MAX(Id) FROM dbo.MovimientoPlanilla),
 										(SELECT MAX(Id) FROM dbo.MarcaDeAsistencia),
-										@horasTrabajadas,
-										@horasExtra,
 										@horasExtrasDoble
 										)
 
 								END
-
-
-								IF DATENAME(WEEKDAY,@fechaActual) = 'Jueves'
-									BEGIN
-									
-										INSERT INTO @empleadosDeducciones(Id,FechaInicio,FechaFin,IdEmpleado,IdTipoDeduccion)
-											SELECT Id,FechaInicio,FechaFin,IdEmpleado,IdTipoDeduccion
-											FROM dbo.DeduccionXEmpleado AS DE 
-											WHERE DE.IdEmpleado = @idEmpleado;
-
-										SELECT @iterarED = COUNT(*) FROM @empleadosDeducciones;
-
-										WHILE @iterarED>0
-											BEGIN
-												SELECT @idDE = (SELECT TOP(1) Id FROM @empleadosDeducciones);
-												/*
-												IF @idDE = (SELECT MAX(Id) FROM FijaNoObligatoria)
-													SELECT @montoDeduccionED = (SELECT FO.Monto FROM FijaNoObligatoria AS FO WHERE FO.Id = @idDE );
-												CAMBIAR MONTOS DE SALARIOS A FLOATS
-												*/
-
-												DELETE TOP(1) FROM @empleadosDeducciones;
-												SELECT @iterarED = COUNT(*) FROM @empleadosDeducciones;
-											END
-
-
-												
-									END
-
-								/*
-									-Aplicar deducciones, esto es, generar los movimientos respecto de las 
-									deducciones. 
-									-Acumular en las instancias de Deducciones Mensuales por empleado, las 
-									deducciones de la semana que termina. 
-									- Actualizar la instancia de planilla mensual del empleado, respecto de salario 
-									Bruto y TotalDeducciones. 
-									- Determinar si la semana que finaliza es la ultima del mes, si es asi, crear una 
-									nueva instancia de la planilla mensual del empleado. 
-									- Crear nueva semana para Planilla semanal del empleado. 
-								*/
-						
 							
-							INSERT INTO dbo.DetalleCorrida
-								VALUES
-								(
-								(SELECT MAX(Id) FROM dbo.Corrida),
-								6,
-								@secItera
-								)
+
 
 							DELETE TOP (1) FROM @MarcasAux
 							SELECT @secItera = @secItera + 1;
-						END
+
+						END -- end del while
+					
 						
-					DELETE FROM @MarcasAux
+					
 							
-				
-				END
+					DELETE FROM @MarcasAux;
+				END --end del if
 				
 
 			 
@@ -806,5 +749,7 @@ WHILE @fechaActual<=@ultimaFecha
 		END
 SET NOCOUNT OFF;
 DROP TABLE #Operaciones
+
+
 
 
