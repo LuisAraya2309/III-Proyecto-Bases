@@ -167,7 +167,19 @@ DECLARE @empleadosDeducciones TABLE(
 	IdTipoDeduccion INT
 )
 
-DECLARE @idDE INT,@idEmpleadoDE INT, @fechaInicioDE DATE, @fechaFinDE DATE, @idTipoDeduccionDE INT, @iterarED INT, @montoDeduccionED INT;
+DECLARE @idDE INT,@idEmpleadoDE INT, @fechaInicioDE DATE,
+	@fechaFinDE DATE, @idTipoDeduccionDE INT, @iterarED INT,
+	@montoDeduccionED INT;
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+DECLARE @Id INT ; 
+DECLARE @IdMarcaDeAsistencia INT;
+DECLARE @IdPlanillaXSemXEmp INT ;
+
+DECLARE @IdDeduccionXEmpleado INT;
+DECLARE @montoDeduccionConvert FLOAT;
+
 --INICIO DE LA ITERACION DE OPERACION POR OPERACION
 WHILE @fechaActual<='2020-11-06'
 		BEGIN
@@ -478,20 +490,16 @@ WHILE @fechaActual<='2020-11-06'
 								VALUES(@fechaInicioDedu,NULL,@idEmpleado,@IdTipoDeduccion)
 							
 							IF CHARINDEX('.',@montoDeduccion) = 0
-								INSERT INTO dbo.FijaNoObligatoria
-									VALUES
-									(
-									(SELECT MAX(Id) FROM dbo.DeduccionXEmpleado),
-									(CONVERT(FLOAT,@montoDeduccion))
-									)
-							ELSE
-								INSERT INTO dbo.DeduccionXEmpleadoNoObligatoriaPorcentual
-									VALUES
-									(
-									(SELECT MAX(Id) FROM dbo.DeduccionXEmpleado),
-									(CONVERT(FLOAT,@montoDeduccion))
-									)
+								BEGIN
+									SET @IdDeduccionXEmpleado = (SELECT MAX(Id) FROM dbo.DeduccionXEmpleado);
+									SET @montoDeduccionConvert  = CONVERT(FLOAT,@montoDeduccion);
+									EXEC sp_insertarFijaNoObligatoria @IdDeduccionXEmpleado , @montoDeduccionConvert, 0
+								END
+							ELSE	
+								SET @IdDeduccionXEmpleado = (SELECT MAX(Id) FROM dbo.DeduccionXEmpleado);
+								SET @montoDeduccionConvert  = CONVERT(FLOAT,@montoDeduccion);
 
+								EXEC sp_InsertarDeduccionXEmpleadoNoObligatoriaPorcentual @IdDeduccionXEmpleado , @montoDeduccionConvert, 0
 							
 							INSERT INTO dbo.DetalleCorrida
 								VALUES
@@ -554,12 +562,8 @@ WHILE @fechaActual<='2020-11-06'
 								BEGIN 
 									SELECT @fechaDeduFin = (SELECT FechaFinal FROM dbo.SemanaPlanilla WHERE Id = @idMaximoSemanaPlanilla)
 								END
-
-							UPDATE DeduccionXEmpleado 
-								SET FechaFin = @fechaDeduFin
-								WHERE IdEmpleado = @idEmpleado AND IdTipoDeduccion = @IdTipoDeduccion
-
-							
+							EXEC sp_ModifDeduccionXEmp @fechaDeduFin, @idEmpleado , @IdTipoDeduccion , 0
+								
 							DELETE TOP (1) FROM @DesasociaEmpleado;
 							SELECT @secItera = @secItera + 1;
 						END
@@ -644,87 +648,51 @@ WHILE @fechaActual<='2020-11-06'
 
 							SELECT @gananciasOrdinarias,@ganaciasExtra,@gananciasExtraDoble;
 							--Inserta la marca de asistencia
-							INSERT INTO dbo.MarcaDeAsistencia
-								VALUES
-								(
-								@fechaInicio,
-								@fechaFin,                             
-								@idJornada
-								)
-							
+
+							EXEC sp_InsertarMarcaAsistencia @fechaInicio , @fechaFin , @idJornada , 0
 							
 							--MOVIMIENTO DE HORAS ORDINARIAS
-							INSERT INTO dbo.MovimientoPlanilla
-								VALUES
-								(
-								@fechaActual,
-								@gananciasOrdinarias,
-								1,
-								(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado AS PS WHERE PS.IdEmpleado = @idEmpleado)
-								)
 
-							UPDATE dbo.PlanillaXSemanaxEmpleado
-								SET SalarioBruto = SalarioBruto + @gananciasOrdinarias
-								WHERE PlanillaXSemanaxEmpleado.IdEmpleado = @idEmpleado;
+							EXEC sp_InsertarMovimientoPlanilla @fechaActual , @gananciasOrdinarias, 1 , @IdPlanillaXSemXEmp, 0
 
-							INSERT INTO dbo.MovimientoDeHoras
-								VALUES
-								(
-								(SELECT MAX(Id) FROM dbo.MovimientoPlanilla),
-								(SELECT MAX(Id) FROM dbo.MarcaDeAsistencia),
-								@horasTrabajadas
-								)
+							EXEC sp_ModifPlanillaXSemXEmp @gananciasOrdinarias, @idEmpleado, 0;
 
-								
+							SET @Id = (SELECT MAX(Id) FROM dbo.MovimientoPlanilla)
+							SET @IdMarcaDeAsistencia = (SELECT MAX(Id) FROM dbo.MarcaDeAsistencia)
+
+							EXEC sp_InsertarMovimientoHoras  @Id , @IdMarcaDeAsistencia , @horasTrabajadas, 0; 
+
 
 							IF @horasExtra>0 AND @horasExtrasDoble = 0
 								BEGIN
 									--MOVIMIENTO DE HORAS EXTRA NORMALES
-									INSERT INTO dbo.MovimientoPlanilla
-										VALUES
-										(
-										@fechaActual,
-										@ganaciasExtra,
-										2,
-										(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado AS PS WHERE PS.IdEmpleado = @idEmpleado )
-										)
 
-									UPDATE dbo.PlanillaXSemanaxEmpleado
-										SET SalarioBruto = SalarioBruto + @ganaciasExtra
-										WHERE PlanillaXSemanaxEmpleado.IdEmpleado = @idEmpleado;
+									SET @IdPlanillaXSemXEmp = (SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado  AS PS WHERE PS.IdEmpleado = @idEmpleado);
 
-									INSERT INTO dbo.MovimientoDeHoras
-										VALUES
-										(
-										(SELECT MAX(Id) FROM dbo.MovimientoPlanilla),
-										(SELECT MAX(Id) FROM dbo.MarcaDeAsistencia),
-										@horasExtra
-										)
+									EXEC sp_InsertarMovimientoPlanilla @fechaActual , @ganaciasExtra, 2 , @IdPlanillaXSemXEmp, 0
+
+									EXEC sp_ModifPlanillaXSemXEmp @ganaciasExtra, @idEmpleado, 0;
+
+									SET @Id = (SELECT MAX(Id) FROM dbo.MovimientoPlanilla)
+									SET @IdMarcaDeAsistencia = (SELECT MAX(Id) FROM dbo.MarcaDeAsistencia)
+
+									EXEC sp_InsertarMovimientoHoras  @Id , @IdMarcaDeAsistencia , @horasExtra, 0; 
 								END
 
 							IF @horasExtrasDoble>0 AND @horasExtra = 0
 								BEGIN
 									--MOVIMIENTO DE HORAS EXTRAS DOBLES
-									INSERT INTO dbo.MovimientoPlanilla
-									VALUES
-									(
-									@fechaActual,
-									@gananciasExtraDoble,
-									3,
-									(SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado  AS PS WHERE PS.IdEmpleado = @idEmpleado)
-									)
 
-									UPDATE dbo.PlanillaXSemanaxEmpleado
-										SET SalarioBruto = SalarioBruto + @gananciasExtraDoble
-										WHERE PlanillaXSemanaxEmpleado.IdEmpleado = @idEmpleado;
+									SET @IdPlanillaXSemXEmp = (SELECT MAX(Id) AS id FROM PlanillaXSemanaXEmpleado  AS PS WHERE PS.IdEmpleado = @idEmpleado);
 
-									INSERT INTO dbo.MovimientoDeHoras
-										VALUES
-										(
-										(SELECT MAX(Id) FROM dbo.MovimientoPlanilla),
-										(SELECT MAX(Id) FROM dbo.MarcaDeAsistencia),
-										@horasExtrasDoble
-										)
+									EXEC sp_InsertarMovimientoPlanilla @fechaActual , @gananciasExtraDoble, 3 , @IdPlanillaXSemXEmp, 0
+
+									EXEC sp_ModifPlanillaXSemXEmp @gananciasExtraDoble, @idEmpleado, 0;
+
+									SET @Id = (SELECT MAX(Id) FROM dbo.MovimientoPlanilla);
+									SET @IdMarcaDeAsistencia = (SELECT MAX(Id) FROM dbo.MarcaDeAsistencia);
+
+									EXEC sp_InsertarMovimientoHoras  @Id , @IdMarcaDeAsistencia , @horasExtrasDoble, 0; 
 
 								END
 							

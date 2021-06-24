@@ -7,7 +7,7 @@ CREATE FUNCTION CargarXML( )
 		SELECT * FROM(
 			SELECT CAST(c AS XML) FROM
 			OPENROWSET(
-				BULK 'C:\Users\luist\OneDrive\Escritorio\Proyecto 3\III-Proyecto-Bases\SQL\Datos_Tarea3.xml',SINGLE_BLOB) AS T(c)
+				BULK 'C:\Users\Sebastian\Desktop\TEC\IIISemestre\Bases de Datos\III-Proyecto-Bases\SQL\Datos_Tarea3.xml',SINGLE_BLOB) AS T(c)
 			) AS S(C)
 		)
 		
