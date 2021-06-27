@@ -53,9 +53,7 @@
             %>
             </select>
             
-           Valor de documento de identidad: <input type="text" name="valorDocIdentidad" required="">
-           
-           Fecha de Nacimiento: <input type="text" name="fechaNacimiento" required="">
+           Valor de documento de identidad: <input type="text" name="valorDocIdentidad" required=""> 
            
            Puesto:
             <select name="puesto" id="puesto">
