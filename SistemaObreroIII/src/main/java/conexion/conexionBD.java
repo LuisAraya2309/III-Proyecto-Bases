@@ -20,7 +20,7 @@ public class conexionBD {
     
     public conexionBD(){
           try{
-              String conexionUrl = "jdbc:sqlserver://localhost:1433;databaseName=PlanillaObrera;user=sa;password=admin";
+              String conexionUrl = "jdbc:sqlserver://localhost:1433;databaseName=SistemaObrero;user=sa;password=admin";
               Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
               try{
                   Connection con =  DriverManager.getConnection(conexionUrl);

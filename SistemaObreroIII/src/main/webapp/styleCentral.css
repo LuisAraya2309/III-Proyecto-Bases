@@ -10,7 +10,8 @@ body{
 
 input{
     font: bold 65% 'KoHo';
-    background: #ffffff
+    color:whitesmoke;
+    background: #000000
 }
 
 form{

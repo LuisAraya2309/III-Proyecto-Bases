@@ -8,8 +8,8 @@ body{
 }
 input{
     font: bold 65% 'KoHo';
-    background-color: #ffffff;
-    
+    color:whitesmoke;
+    background-color: #000000;
 }
 
 form{
