@@ -1,0 +1,18 @@
+h1{
+    font: bold 300% 'KoHo';
+    text-align: center;
+}
+
+body{
+    background: url(loginBackground.jpg);
+}
+input{
+    font: bold 65% 'KoHo';
+    background-color: #ffffff;
+    
+}
+
+form{
+    font: bold 250% 'KoHo';
+    text-align: center;
+}
