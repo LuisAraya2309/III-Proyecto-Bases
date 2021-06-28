@@ -129,29 +129,6 @@ public class validacionesSQL {
                 } 
     }
     
-    public static boolean validarFecha(String fecha){
-        /*
-        String[] splittedFecha = fecha.split("-");
-        if(splittedFecha.length!=3){
-            try{
-                int año = Integer.parseInt(splittedFecha[0]);
-                int mes = Integer.parseInt(splittedFecha[1]);
-                int dia = Integer.parseInt(splittedFecha[2]);
-                boolean diaC = (1<=dia)&&(dia<=31);
-                boolean mesC = (1<=mes)&&(mes<=12);
-                boolean añoC = (año<=2021)&&(0<año);
-                return (diaC&&mesC&&añoC);
-                
-            }catch(NumberFormatException e){
-                return false;
-            }
-        }
-        else{
-            return false;
-        }
-    */
-        return true;
-    }
     
     public static boolean validLogin(String user,String password){
             try{ 

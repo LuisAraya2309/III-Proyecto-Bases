@@ -6,6 +6,7 @@
 <%@page import="java.sql.PreparedStatement"%>
 <%@page import="java.sql.Connection"%>
 <%@page import="conexion.conexionBD"%>
+<%@page import="validaciones.validacionesSQL"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <!DOCTYPE html>
@@ -28,18 +29,19 @@
                    comprobar.put(dataset.getString("username"),dataset.getString("password"));
                 }
                 if(comprobar.size()==0){
-                    /*CARGABA LOS DATOS EN ESTA PARTE */
+                    System.out.println("Cargando Datos");
+                    String simulacionCarga = "EXECUTE sp_ScriptCargaXML";
+                    PreparedStatement cargar = conexion.prepareStatement(simulacionCarga);
+                    cargar.executeQuery();
                 }
-                System.out.println("Ya hay datos");
                 String user = request.getParameter("user");
                 String password = request.getParameter("password");
-                /*if(VALIDAR QUE USER Y PASSWORD EXISTA){
+                if(validacionesSQL.validLogin(user, password)){
                     response.sendRedirect("central.html");
-                }*/
-                response.sendRedirect("central.html");
-                /*else{
+                }
+                else{
                     out.println("Usuario no registrado <a href='index.html'>Intente de nuevo</a>");
-                }*/
+                }
                 }catch(SQLException ex){
                     response.sendRedirect("central.html");
                 }  
