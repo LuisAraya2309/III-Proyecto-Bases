@@ -18,19 +18,7 @@ CREATE PROCEDURE sp_InsertarEmpleado
 
 AS
 BEGIN
-		--DECLARE
-		--	@inNombre VARCHAR(40)
-		--	, @inValorDocumentoIdentidad INT
-		--	, @FechaNacimiento DATE
-		--	, @inIdPuesto INT
-		--	, @inIdDepartamento INT
-		--	, @inIdTipoDocumentacionIdentidad INT
-		--	, @inUsuario
-		--	, @inContraseña
-		--	, @OutResultCode INT OUTPUT
-
-		--EXEC sp_CargarEmpleados
-		--		@OutResultCode INT
+		
 
 		SET NOCOUNT ON;
 		BEGIN TRY
@@ -38,7 +26,7 @@ BEGIN
 				@OutResultCode=0 ;
 
 			BEGIN TRANSACTION TSaveMov
-				INSERT INTO Empleados
+				INSERT INTO dbo.Empleados
 					VALUES(
 						@inNombre
 						, @inValorDocumentoIdentidad
@@ -46,11 +34,16 @@ BEGIN
 						, @inIdPuesto
 						, @inIdDepartamento
 						, @inIdTipoDocumentacionIdentidad
-						, @inUsuario
-						, @inContraseña
-						, 2
 						, 1
 					)
+				INSERT INTO dbo.Usuarios
+					VALUES
+						(
+						@inUsuario,
+						@inContraseña,
+						2,
+						1
+						)
 			COMMIT TRANSACTION TSaveMov;
 		END TRY
 		BEGIN CATCH

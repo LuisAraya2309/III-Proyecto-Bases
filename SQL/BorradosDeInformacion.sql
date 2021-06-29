@@ -22,6 +22,8 @@ delete from DetalleCorrida;
 delete from Corrida;
 delete from BitacoraErrores;
 delete from MovimientoDeHoras;
+delete from MovimientoDeduccion;
+delete from DeduccionXEmpleadoXMes;
 delete from MovimientoPlanilla;
 
 
@@ -32,6 +34,7 @@ DBCC CHECKIDENT ('Jornada', RESEED, 0)
 DBCC CHECKIDENT ('SemanaPlanilla', RESEED, 0)
 DBCC CHECKIDENT ('MesPlanilla', RESEED, 0)
 DBCC CHECKIDENT ('DeduccionXEmpleado', RESEED, 0)
+DBCC CHECKIDENT ('DeduccionXEmpleadoXMes', RESEED, 0)
 DBCC CHECKIDENT ('PlanillaXSemanaXEmpleado', RESEED, 0)
 DBCC CHECKIDENT ('PlanillaXMesxEmpleado', RESEED, 0)
 DBCC CHECKIDENT ('Corrida', RESEED, 0)

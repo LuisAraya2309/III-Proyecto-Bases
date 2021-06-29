@@ -2,33 +2,50 @@
 
 CREATE TRIGGER Tr_SemanaPlanillaDeduccion 
 ON dbo.Empleados
-FOR INSERT 
+AFTER INSERT 
 AS
 	DECLARE @idEmpleado INT = (SELECT Id FROM inserted); 
 	DECLARE @fechaInicioDeduccion DATE = (SELECT FechaInicio FROM SemanaPlanilla WHERE Id = (SELECT MAX(Id) FROM SemanaPlanilla) );
-	INSERT INTO DeduccionXEmpleado (FechaInicio,IdEmpleado,IdTipoDeduccion)
-			SELECT @fechaInicioDeduccion,@idEmpleado,Id FROM TipoDeduccion WHERE EsObligatoria = 'Si';
+
+	INSERT INTO dbo.DeduccionXEmpleado (FechaInicio,IdEmpleado,IdTipoDeduccion)
+			SELECT 
+				@fechaInicioDeduccion , 
+				I.Id,
+				T.Id
+				FROM inserted I INNER JOIN TipoDeduccion T
+				ON T.EsObligatoria = 'Si'
 			
 
-			
-	INSERT INTO PlanillaXMesxEmpleado
+	INSERT INTO dbo.PlanillaXMesxEmpleado
+		(
+		SalarioBruto,
+		SalarioNeto,
+		IdEmpleado,
+		IdMesPlanilla
+		)
 		VALUES
 		(
 			0.0,
 			0.0,
-			(SELECT MAX(Id) AS ID FROM dbo.MesPlanilla)
+			(SELECT I.Id  FROM inserted I),
+			(SELECT MAX(MP.Id) AS ID FROM dbo.MesPlanilla AS MP)
 		)
 
-	INSERT INTO PlanillaXSemanaxEmpleado
+	INSERT INTO dbo.PlanillaXSemanaxEmpleado
+		(
+		SalarioBruto,
+		SalarioNeto,
+		IdEmpleado,
+		IdSemanaPlanilla,
+		IdPlanillaXMesXEmpleado
+		)
 		VALUES
 		(
 			0.0,
 			0.0,
-			(SELECT Id  FROM inserted),
-			(SELECT MAX(Id) AS ID FROM dbo.SemanaPlanilla),
-			(SELECT MAX(Id) AS ID FROM dbo.MesPlanilla)
-
+			(SELECT I.Id  FROM inserted I),
+			(SELECT MAX(SP.Id) AS ID FROM dbo.SemanaPlanilla AS SP),
+			(SELECT MAX(MP.Id) AS ID FROM dbo.PlanillaXMesxEmpleado AS MP)
 		)
 
---Use SistemaObrero
---DROP TRIGGER Tr_SemanaPlanillaDeduccion 
+
