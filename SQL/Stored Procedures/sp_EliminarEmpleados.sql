@@ -24,11 +24,18 @@ BEGIN
 			@OutResultCode=0 ;
 
 			BEGIN TRANSACTION TSaveMov
+
 				UPDATE dbo.Empleados
 					SET 
 						Empleados.Activo = 0
 					WHERE 
 						Empleados.ValorDocumentoIdentidad = @inValorDocIdentidad;
+
+				UPDATE dbo.Usuarios
+					SET 
+						Usuarios.Activo = 0
+					WHERE 
+						Usuarios.Id = (SELECT E.Id FROM Empleados AS E WHERE E.ValorDocumentoIdentidad = @inValorDocIdentidad)+2;
 			COMMIT TRANSACTION TSaveMov;
 
 
