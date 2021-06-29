@@ -1,4 +1,4 @@
-package conexion;
+package conexiones;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,14 +10,6 @@ public class conexionBD {
      //Atributes
     private Connection conexion;
  
-    public void setConexion(Connection conexion) {
-        this.conexion = conexion;
-    }
-    
-    public Connection getConexion() {
-        return conexion;
-    }
-    
     public conexionBD(){
           try{
               String conexionUrl = "jdbc:sqlserver://localhost:1433;databaseName=SistemaObrero;user=sa;password=admin";
@@ -25,12 +17,22 @@ public class conexionBD {
               try{
                   Connection con =  DriverManager.getConnection(conexionUrl);
                   this.conexion = con;
+                  System.out.println("Hizo conexion");
               } catch(SQLException ex){
                   System.out.println(ex.toString());
               }
           } catch(ClassNotFoundException ex){
               Logger.getLogger(conexionBD.class.getName()).log(Level.SEVERE, null, ex);
           }
+          
+    }
+    
+    public void setConexion(Connection conexion) {
+        this.conexion = conexion;
+    }
+    
+    public Connection getConexion() {
+        return conexion;
     }
         
 }

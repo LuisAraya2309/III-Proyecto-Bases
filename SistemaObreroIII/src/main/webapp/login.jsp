@@ -1,12 +1,12 @@
 
-<%@page import="java.sql.SQLException"%>
-<%@page import="java.util.HashMap"%>
-<%@page import="java.sql.ResultSet"%>
-<%@page import="java.sql.PreparedStatement"%>
-<%@page import="java.sql.PreparedStatement"%>
-<%@page import="java.sql.Connection"%>
-<%@page import="conexion.conexionBD"%>
-<%@page import="validaciones.validacionesSQL"%>
+<%@page import ="java.sql.SQLException"%>
+<%@page import ="java.util.HashMap"%>
+<%@page import ="java.sql.ResultSet"%>
+<%@page import ="java.sql.PreparedStatement"%>
+<%@page import ="java.sql.PreparedStatement"%>
+<%@page import ="java.sql.Connection"%>
+<%@page import ="conexiones.conexionBD"%>
+<%@page import ="validaciones.validacionesSQL"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <!DOCTYPE html>
@@ -21,6 +21,7 @@
             try{ 
                 conexionBD conection = new conexionBD();
                 Connection conexion = conection.getConexion();
+                System.out.println("Paso la conexion");
                 String callSP = "EXECUTE sp_ListarUsuarios";
                 PreparedStatement ps = conexion.prepareStatement(callSP);
                 ResultSet dataset = ps.executeQuery();

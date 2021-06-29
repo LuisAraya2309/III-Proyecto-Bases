@@ -3,7 +3,7 @@ package validaciones;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import conexion.conexionBD;
+import conexiones.conexionBD;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
