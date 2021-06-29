@@ -1,0 +1,23 @@
+h1{
+    font: bold 300% 'KoHo' ;
+    text-align: center;
+    color:whitesmoke;
+}
+
+body{
+    background: url(centralBackground.jpg);
+}
+
+input{
+    font: bold 65% 'KoHo';
+    color:whitesmoke;
+    background: #000000
+}
+
+form{
+    font: bold 250% 'KoHo';
+    text-align: center;
+    color:white;
+}
+
+
