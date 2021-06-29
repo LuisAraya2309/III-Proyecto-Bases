@@ -26,14 +26,14 @@ BEGIN
 			@OutResultCode=0;
 
 			BEGIN TRANSACTION TSaveMov
-				INSERT INTO Usuarios
+				INSERT INTO dbo.Usuarios
 					SELECT
 						usuario.value('@username','VARCHAR(40)') AS username,
 						usuario.value('@pwd','VARCHAR(40)') AS pwd,
 						usuario.value('@tipo','INT') AS tipo,
 						1 AS activo  
                 
-					FROM @inDocXML.nodes('Datos/Catalogos/Usuarios/Usuario') AS T(usuario)
+					FROM @inDocXML.nodes('Datos/Usuarios/Usuario') AS T(usuario)
 					
 
 			COMMIT TRANSACTION TSaveMov;
@@ -61,4 +61,3 @@ BEGIN
 
 END
 GO
-
