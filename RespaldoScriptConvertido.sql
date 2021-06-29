@@ -34,6 +34,8 @@ EXEC sp_CargarFeriados @docXML,0;
 --Deducciones
 EXEC sp_CargarTipoDeduccion @docXML,0;
 
+--Usuarios
+EXEC sp_CargarUsuarios @docXML,0;
 
 
 
