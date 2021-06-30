@@ -1,5 +1,4 @@
 
-
 <%@page import="java.util.List"%>
 <%@page import="java.sql.SQLException"%>
 <%@page import="java.util.ArrayList"%>
@@ -18,7 +17,7 @@
     </head>
     <body>
         <form action="empleadoAEditar.jsp">
-            <% String empleadoSeleccionado  = request.getParameter("empleado");
+            <% String empleadoSeleccionado  = request.getParameter("empleados");
                 String empleadoActualizado =""; 
                 if(empleadoSeleccionado!=null){
                     String[] infoEmpleado = empleadoSeleccionado.split(" ");
@@ -54,8 +53,6 @@
             </select>
             
            Valor de documento de identidad: <input type="text" name="valorDocIdentidad" required="">
-           
-           Fecha de Nacimiento: <input type="text" name="fechaNacimiento" required="">
            
            Puesto:
             <select name="puesto" id="puesto">
@@ -109,6 +106,6 @@
             
            <input type="submit" name="editar" id="editar" value="Editar">
         </form>
-        <a href='central.html'>Regresar a la central</a>
+        <a href='central.jsp'>Regresar a la central</a>
     </body>
 </html>

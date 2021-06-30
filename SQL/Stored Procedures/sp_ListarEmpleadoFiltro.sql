@@ -5,20 +5,23 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE dbo.sp_ListarEmpleados
---Devuelve la lista de todos los empleados ordenados alfabéticamente
+CREATE PROCEDURE dbo.sp_ListarEmpleadosFiltro 
+	@inFiltro varchar(40)
+
+--Devuelve la lista de todos los empleados ordenados por un filtro
 AS
 BEGIN
 	-- Codigo para probar el SP
 
-    --EXEC dbo.sp_ListarEmpleados
+    --EXEC dbo.sp_ListarEmpleadosFiltro "V" ;
 	SET NOCOUNT ON;
 
 	SELECT 
 		*
 	FROM dbo.Empleados AS E
 	WHERE 
-		E.Activo = 1
+		E.Nombre LIKE @inFiltro
+		AND E.Activo = 1
 	ORDER BY E.Nombre;
 
 	SET NOCOUNT OFF;

@@ -67,9 +67,11 @@ public class validacionesSQL {
                     ResultSet dataset = ps.executeQuery();
                     List<String> empleadosConvertidos = new ArrayList<>();
                     while(dataset.next()){
-                       empleadosConvertidos.add(dataset.getString("valorDocIdentidad"));
+                       empleadosConvertidos.add(dataset.getString("ValorDocumentoIdentidad"));
                     }
+     
                     for(int i=0;i<empleadosConvertidos.size();i++){
+                        
                         if(empleado.equals(empleadosConvertidos.get(i))){
                             return true;
                         }
@@ -94,6 +96,7 @@ public class validacionesSQL {
                        empleadosConvertidos.add(dataset.getString("Nombre"));
                     }
                     for(int i=0;i<empleadosConvertidos.size();i++){
+                        
                         if(empleado.equals(empleadosConvertidos.get(i))){
                             return true;
                         }

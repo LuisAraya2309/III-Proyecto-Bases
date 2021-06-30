@@ -20,4 +20,9 @@ form{
     color:white;
 }
 
+select{
+    font: bold 65% 'KoHo';
+    color:whitesmoke;
+    background: #000000
+}
 

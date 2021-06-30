@@ -42,14 +42,14 @@
                 String user = request.getParameter("user");
                 String password = request.getParameter("password");
                 if(validacionesSQL.validLogin(user, password)){
-                    response.sendRedirect("central.html");
+                    response.sendRedirect("central.jsp");
                 }
                 else{
                     out.println("Usuario no registrado <a href='index.html'>Intente de nuevo</a>");
                 }
                 }catch(SQLException ex){
                     System.out.println(ex);
-                    //response.sendRedirect("central.html");
+                    //response.sendRedirect("central.jsp");
                 }  
         %>
         
