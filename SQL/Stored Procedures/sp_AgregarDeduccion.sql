@@ -7,17 +7,32 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE dbo.sp_AgregarDeduccion
-	@inNombreEmpleado VARCHAR(40)
+	@inValorDocIdentidad VARCHAR(40)
 	, @inFechaInicio DATE
-	, @inBuscarNombreTipoDedu  VARCHAR(40) 
+	, @inBuscarNombreTipoDedu VARCHAR(40) 
 	, @inNuevoMonto FLOAT
 	, @inTipoMonto BIT 
 	, @OutResultCode INT OUTPUT
 
-
 AS
 
 BEGIN
+
+	--DECLARE @inValorDocIdentidad VARCHAR(40) = 55186659
+	-- , @inFechaInicio DATE = '2021-03-12'
+	-- , @inBuscarNombreTipoDedu VARCHAR(40) = "Ahorro de Vivienda"
+	-- , @inNuevoMonto FLOAT = 15000
+	-- , @inTipoMonto BIT = 1
+	-- , @OutResultCode INT OUTPUT = 0
+
+	--EXEC sp_AgregarDeduccion 
+	-- @inValorDocIdentidad 
+	-- , @inFechaInicio 
+	-- , @inBuscarNombreTipoDedu 
+	-- , @inNuevoMonto 
+	-- , @inTipoMonto 
+	-- , @OutResultCode
+
 	SET NOCOUNT ON;
 		BEGIN TRY
 			SELECT
@@ -27,7 +42,7 @@ BEGIN
 				INSERT INTO DeduccionXEmpleado (FechaInicio, IdEmpleado, IdTipoDeduccion)
 					VALUES(
 						@inFechaInicio,
-						(SELECT E.ID FROM Empleados AS E WHERE E.Nombre = @inNombreEmpleado),
+						(SELECT E.ID FROM Empleados AS E WHERE E.ValorDocumentoIdentidad = @inValorDocIdentidad),
 						(SELECT TD.id FROM TipoDeduccion AS TD WHERE TD.Nombre = @inBuscarNombreTipoDedu)
 					)
 			
@@ -37,7 +52,7 @@ BEGIN
 				)
 				SELECT
 					(SELECT MAX(DE.id)FROM DeduccionXEmpleado AS DE),
-					@inTipoMonto
+					@inNuevoMonto
 				WHERE @inTipoMonto = 0
 		
 				INSERT INTO dbo.FijaNoObligatoria(
@@ -46,8 +61,8 @@ BEGIN
 				)
 				SELECT
 					(SELECT MAX(DE.id)FROM DeduccionXEmpleado AS DE),
-					@inTipoMonto
-				WHERE @inTipoMonto = 0
+					@inNuevoMonto
+				WHERE @inTipoMonto = 1
 
 			COMMIT TRANSACTION TSaveMov;
 		END TRY

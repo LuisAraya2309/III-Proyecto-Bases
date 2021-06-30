@@ -14,12 +14,24 @@ CREATE PROCEDURE dbo.sp_EliminarDeduccion
 AS
 
 BEGIN
+
+--DECLARE @inIdDeduccionXEmpleado INT = 388
+	-- , @inFechaFin DATE = '2021-06-01'
+	-- , @OutResultCode INT OUTPUT= 0
+
+	--EXEC sp_EliminarDeduccion 
+	-- @inIdDeduccionXEmpleado
+	-- , @inFechaFin
+	-- , @OutResultCode
+
 	SET NOCOUNT ON;
 		BEGIN TRY
 			SELECT
 				@OutResultCode=0 ;
 
 			BEGIN TRANSACTION
+
+				--Se cambia el atributo de la fecha fin de la deduccion con esto se finaliza su periodo de uso 
 				UPDATE dbo.DeduccionXEmpleado
 					SET
 						FechaFin = @inFechaFin

@@ -39,8 +39,6 @@ BEGIN
 				@horasExtrasDoble INT, @gananciasOrdinarias FLOAT, @ganaciasExtra FLOAT,
 				@gananciasExtraDoble FLOAT,@idJornada INT;
 
-
-
 			--Para generar los movimientos de las deducciones
 			DECLARE @empleadosDeducciones TABLE(
 				Id INT,

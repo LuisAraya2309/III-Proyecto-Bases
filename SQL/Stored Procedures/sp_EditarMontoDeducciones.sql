@@ -6,44 +6,48 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE dbo.sp_EditarMontoDeducciones
-	@inNombreTipoDedu VARCHAR(64)
-	, @inValorDocIdentidad INT
+	@inIdDeduccionXEmpleado INT
 	, @inNuevoValor FLOAT
 	, @inTipoMonto BIT
 	, @OutResultCode INT OUTPUT
 AS
 
 BEGIN
+	--DECLARE @inIdDeduccionXEmpleado INT = 388
+	-- , @inNuevoValor FLOAT = 20000
+	-- , @inTipoMonto BIT = 1
+	-- , @OutResultCode INT OUTPUT= 0
+
+	--EXEC sp_EditarMontoDeducciones 
+	-- @inIdDeduccionXEmpleado
+	-- , @inNuevoValor
+	-- , @inTipoMonto
+	-- , @OutResultCode
+
 	SET NOCOUNT ON;
 	BEGIN TRY
 		SELECT
 			@OutResultCode=0 ;
 
-		DECLARE @idDeduccionXEmpleado INT, @idEmpleado INT, @idTipoDeduccion INT;
-		SET @idEmpleado = (SELECT E.Id FROM Empleados AS E WHERE E.ValorDocumentoIdentidad = @inValorDocIdentidad);
-		SET @idTipoDeduccion = (SELECT TD.id FROM TipoDeduccion AS TD WHERE TD.Nombre = @inNombreTipoDedu);
-		SET @idDeduccionXEmpleado = (SELECT DE.id FROM DeduccionXEmpleado AS DE WHERE DE.IdEmpleado = @idEmpleado AND DE.IdTipoDeduccion = @idTipoDeduccion);
-		
-		IF @inTipoMonto = 0
-			BEGIN
-				BEGIN TRANSACTION
-					UPDATE dbo.DeduccionXEmpleadoNoObligatoriaPorcentual
-					SET 
-						Porcentage = @inNuevoValor
-					WHERE 
-						Id = @idDeduccionXEmpleado
-				COMMIT TRANSACTION TSaveMov;
-			END
-		ELSE
-			BEGIN
-				BEGIN TRANSACTION
-					UPDATE dbo.FijaNoObligatoria
-					SET 
-						Monto = @inNuevoValor
-					WHERE 
-						Id = @idDeduccionXEmpleado
-				COMMIT TRANSACTION TSaveMov;
-			END
+		BEGIN TRANSACTION
+
+			-- Se edita el monto de la deduccion dependiendo de si son fijas no obligatorias o porcentual no obligatoria
+
+			UPDATE dbo.DeduccionXEmpleadoNoObligatoriaPorcentual
+			SET 
+				Porcentage = @inNuevoValor
+			WHERE 
+				Id = @inIdDeduccionXEmpleado AND
+				@inTipoMonto = 0
+
+			UPDATE dbo.FijaNoObligatoria
+			SET 
+				Monto = @inNuevoValor
+			WHERE 
+				Id = @inIdDeduccionXEmpleado AND
+				@inTipoMonto = 1
+
+		COMMIT TRANSACTION TSaveMov;
 
 	END TRY
 	BEGIN CATCH

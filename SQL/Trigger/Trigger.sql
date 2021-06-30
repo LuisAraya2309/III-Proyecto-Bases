@@ -1,5 +1,3 @@
-
-
 CREATE TRIGGER Tr_SemanaPlanillaDeduccion 
 ON dbo.Empleados
 AFTER INSERT 
@@ -31,6 +29,8 @@ AS
 			(SELECT MAX(MP.Id) AS ID FROM dbo.MesPlanilla AS MP)
 		)
 
+
+
 	INSERT INTO dbo.PlanillaXSemanaxEmpleado
 		(
 		SalarioBruto,
@@ -47,5 +47,4 @@ AS
 			(SELECT MAX(SP.Id) AS ID FROM dbo.SemanaPlanilla AS SP),
 			(SELECT MAX(MP.Id) AS ID FROM dbo.PlanillaXMesxEmpleado AS MP)
 		)
-
 
