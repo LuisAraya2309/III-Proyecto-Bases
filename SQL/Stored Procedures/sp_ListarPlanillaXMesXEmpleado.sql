@@ -9,6 +9,11 @@ CREATE PROCEDURE dbo.sp_ListarPlanillaMensual
     @inValorDocIdentidad INT,
     @OutResultCode INT OUTPUT
 
+	--Codigo Ejemplo para probar este SP
+	/*
+	  EXEC sp_ListarPlanillaMensual 39936325,0
+	*/
+
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -22,6 +27,7 @@ BEGIN
             RETURN
         END
 
+		--Retorna la seleccion de todas las planillas mensuales
         SELECT 
             PMes.Id,
             PMes.SalarioBruto,

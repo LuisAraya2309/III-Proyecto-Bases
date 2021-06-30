@@ -49,7 +49,40 @@ BEGIN
 			WHERE 
 				D.Nombre = @inBuscarDepartamento);
 
-			BEGIN TRANSACTION 
+
+			--Descripcion del cambio para insertarlo en el historial
+			DECLARE @descripcion VARCHAR(400),@actualizacion VARCHAR(400),@idEmpleado INT = (SELECT E.Id FROM dbo.Empleados AS E WHERE E.Nombre = @inBuscarNombre),
+			@valorDocIdentidadViejo VARCHAR = CONVERT(VARCHAR,(SELECT E.ValorDocumentoIdentidad FROM dbo.Empleados AS E WHERE E.Nombre = @inBuscarNombre)),
+			@puestoViejo VARCHAR = CONVERT(VARCHAR,(SELECT E.IdPuesto FROM dbo.Empleados AS E WHERE E.Nombre = @inBuscarNombre)),
+			@departamentoViejo VARCHAR = CONVERT(VARCHAR,(SELECT E.IdDepartamento FROM dbo.Empleados AS E WHERE E.Nombre = @inBuscarNombre)),
+			@tipoDocIdentidadViejo VARCHAR = CONVERT(VARCHAR,(SELECT E.IdTipoDocumentoIdentidad FROM dbo.Empleados AS E WHERE E.Nombre = @inBuscarNombre));
+
+			SET @descripcion = 'Edicion del empleado,Nombre: '+ @inBuscarNombre + ',Valores Antiguos: ' +
+								' ,ValorDocIdentidad: ' + @valorDocIdentidadViejo +
+								' ,IdPuesto: ' + @puestoViejo +
+								' ,IdDepartamento: '+ @departamentoViejo +
+								' ,IdTipoDocIdentidad: ' + @tipoDocIdentidadViejo;
+			
+			SET @actualizacion = 'Edicion del empleado,Nombre: '+ CONVERT(VARCHAR,@inNuevoNombre) + ',Valores Actualizados: ' +
+								' ,ValorDocIdentidad: ' + CONVERT(VARCHAR,@inNuevoValorIdentidad) +
+								' ,IdPuesto: ' + CONVERT(VARCHAR,@nuevoPuesto) +
+								' ,IdDepartamento: '+ CONVERT(VARCHAR,@nuevoDepartamento) +
+								' ,IdTipoDocIdentidad: ' + CONVERT(VARCHAR,@nuevoTipoIdentificacion);
+
+			BEGIN TRANSACTION
+				INSERT INTO dbo.Historial
+					(
+					Fecha,
+					Descripcion,
+					Actualizacion
+					)
+					VALUES
+					(
+					GETDATE(),
+					@descripcion,
+					@actualizacion
+					)
+			
 				UPDATE dbo.Empleados
 					SET 
 						Nombre = @inNuevoNombre
@@ -83,4 +116,4 @@ BEGIN
 
 	SET NOCOUNT OFF;
 
-END
+END 
