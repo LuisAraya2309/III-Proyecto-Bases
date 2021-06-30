@@ -15,16 +15,16 @@
     </head>
     <body>
         <%
-            String nombre = request.getParameter("nombreEmpleado");
+            String nombre = request.getParameter("empleados");
             String nuevoNombre = request.getParameter("nuevoNombre");
             String tipoDocIdentidad = request.getParameter("tipoDocIdentidad");
             int valorDocIdentidad = Integer.parseInt(request.getParameter("valorDocIdentidad"));
-            String fechaNacimiento = request.getParameter("fechaNacimiento");
             String puesto = request.getParameter("puesto");
             String departamento = request.getParameter("departamento");
-            if(validacionesSQL.existeEmpleadoNombre(nombre)&& !validacionesSQL.existeEmpleado(valorDocIdentidad+"")&&nuevoNombre.length()<40 ){
-                if(validacionesSQL.validarFecha(fechaNacimiento)){
-                    try{ 
+            if(validacionesSQL.existeEmpleadoNombre(nombre)){
+                if(!validacionesSQL.existeEmpleado(valorDocIdentidad + "")){
+                    if(nuevoNombre.length()<40 ){
+                        try{ 
                             conexionBD conection = new conexionBD();
                             Connection conexion = conection.getConexion();
                             String callSP = "EXECUTE sp_EditarEmpleado ?,?,?,?,?,?,?";
@@ -33,9 +33,9 @@
                             ps.setString(2, nuevoNombre);
                             ps.setString(3, tipoDocIdentidad);
                             ps.setInt(4, valorDocIdentidad);
-                            ps.setString(5, fechaNacimiento);
-                            ps.setString(6,puesto);
-                            ps.setString(7, departamento);
+                            ps.setString(5,puesto);
+                            ps.setString(6, departamento);
+                            ps.setInt(7, 0);
                             ps.executeQuery();
                         }catch(SQLException ex){
                             System.out.println(ex);
@@ -45,12 +45,17 @@
                         out.println("<a href='editarEmpleados.html'>Regresar a la edición de empleados</a>");
                     }
                     else{
-                        out.println("<h1>Formato de fecha inválido </h1>");
+                        out.println("<h1>El nombre ingresado es invalido, debe de tener menos de 40 caracteres. </h1>");
                         out.println("<a href='editarEmpleados.jsp'>Regresar a la edición de empleados</a>");
                     }
                 }
+                else{
+                    out.println("<h1>El valor documento de identidad ingresado ya esta registrado en la base de datos. </h1>");
+                    out.println("<a href='editarEmpleados.jsp'>Regresar a la edición de empleados</a>");
+                }
+            }
             else{
-                out.println("<h1>Nombre invalido, debe de tener menos de 40 caracteres,debe existir dicho empleado a editar y el nuevo nombre no debe de estar repetido </h1>");
+                out.println("<h1>El empleado que desea editar no fue encontrado en la base de datos. </h1>");
                 out.println("<a href='editarEmpleados.jsp'>Regresar a la edición de empleados</a>");
             }
             

@@ -1,6 +1,8 @@
 
-<%@page import="java.sql.SQLException"%>
+
 <%@page import="java.util.List"%>
+<%@page import="java.sql.SQLException"%>
+<%@page import="java.util.ArrayList"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.sql.ResultSet"%>
 <%@page import="java.sql.PreparedStatement"%>
@@ -11,13 +13,24 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Insertar Empleado</title>
         <link href = "styleFuncionalidades.css" type = "text/css"  rel = "stylesheet" /> 
+        <title>Editar Empleados</title>
     </head>
     <body>
-        <form action="empleadoAIngresar.jsp">
+        <form action="empleadoAEditar.jsp">
+            <% String empleadoSeleccionado  = request.getParameter("empleado");
+                String empleadoActualizado =""; 
+                if(empleadoSeleccionado!=null){
+                    String[] infoEmpleado = empleadoSeleccionado.split(" ");
+                    empleadoActualizado = infoEmpleado[1] +" "+ infoEmpleado[2] + " " +infoEmpleado[3];
+                }
+                else{
+                empleadoActualizado = "";
+                }
+            %>
+            Nombre Empleado a editar: <input type="text" name="nombreEmpleado" value="<%= empleadoActualizado%>" required="">
             Nuevo Nombre: <input type="text" name="nuevoNombre" required="">
-            Tipo de Documento de Identidad: <select name="tipoDocIdentidad" id="tipoDocIdentidad">
+            Tipo de Documento de Identidad: <select name="tipoDocIdentidad" id="tipoDocIdentidad" required="">
                 <% try{ 
                 conexionBD conection = new conexionBD();
                 Connection conexion = conection.getConexion();
@@ -41,8 +54,6 @@
             </select>
             
            Valor de documento de identidad: <input type="text" name="valorDocIdentidad" required="">
-           
-           Fecha de Nacimiento: <input type="text" name="fechaNacimiento"required="">
            
            Puesto:
             <select name="puesto" id="puesto">
@@ -93,8 +104,9 @@
             } 
             %>
            </select>
-           <input type="submit" name="insertar" id="insertar" value="Insertar">
+            
+           <input type="submit" name="editar" id="editar" value="Editar">
         </form>
-           <a href='central.html'>Regresar a la central</a>
+        <a href='central.html'>Regresar a la central</a>
     </body>
 </html>
