@@ -21,11 +21,9 @@
     <body>
         <h1>
             Funcionalidades del Sistema
-        </h1>
+        </h1>                   
         <div>
-                       
-        <div>
-            <form>
+            <form action = "decidirFuncionalidad.jsp">
                 Empleados:  <select name="empleados" id="empleados" required="">
                 <% try{ 
                     conexionBD conection = new conexionBD();
@@ -48,43 +46,17 @@
                 } 
                 %>
                </select>
+               
+               <select name = "funcionalidad" id = "funcionalidad" required="">
+                   <option>Historial</option>
+                   <option>Editar Empleado</option>
+                   <option>Editar Deducciones</option>
+                   <option>Ver Planillas Semanales</option>
+                   <option>Ver Planillas Mensuales</option>
+               </select>
+               <input type="submit" name="Ir" id="Ir" value="Ir">
             </form>
         </div>
-
-
-        <div>
-            <form action="historial.jsp">
-                <input type="submit" name="historial" id="historial" value="Historial">
-            </form>
-        </div>    
-
-        <div>
-            <form action="editarEmpleados.jsp">
-                <input type="submit" name="editarEmpleado" id="editarEmpleado" value="Editar empleado">
-            </form>
-        </div>
-
-        <div>
-            <form action="editarDeducciones.jsp">
-                <input type="submit" name="editarDeducciones" id="editarDeducciones" value="Editar Deducciones">
-            </form>
-
-        </div>
-
-
-        <div>
-            <form action="planillaSemana.jsp">
-                <input type="submit" name="planillaSemanales" id="planillaSemanales" value="Planillas semanales">
-            </form>
-        </div>
-
-        <div>
-            <form action="planillaMensual.jsp">
-                <input type="submit" name="planillasMensuales" id="planillasMensuales" value="Planillas mensuales">
-            </form>
-        </div>
-                       
-        
     </body>
         
 </html>

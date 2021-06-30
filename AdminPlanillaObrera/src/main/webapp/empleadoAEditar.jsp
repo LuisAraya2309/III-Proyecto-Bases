@@ -15,12 +15,13 @@
     </head>
     <body>
         <%
-            String nombre = request.getParameter("empleados");
+            String nombre = request.getParameter("nombreEmpleado");
             String nuevoNombre = request.getParameter("nuevoNombre");
             String tipoDocIdentidad = request.getParameter("tipoDocIdentidad");
             int valorDocIdentidad = Integer.parseInt(request.getParameter("valorDocIdentidad"));
             String puesto = request.getParameter("puesto");
             String departamento = request.getParameter("departamento");
+            System.out.println(nombre+nuevoNombre+tipoDocIdentidad+(valorDocIdentidad+""));
             if(validacionesSQL.existeEmpleadoNombre(nombre)){
                 if(!validacionesSQL.existeEmpleado(valorDocIdentidad + "")){
                     if(nuevoNombre.length()<40 ){
@@ -41,7 +42,7 @@
                             System.out.println(ex);
                         }
                         out.println("<h1>Empleado editado con éxito</h1>");
-                        out.println("<a href='central.html'>Regresar a la central</a>");
+                        out.println("<a href='central.jsp'>Regresar a la central</a>");
                         out.println("<a href='editarEmpleados.html'>Regresar a la edición de empleados</a>");
                     }
                     else{

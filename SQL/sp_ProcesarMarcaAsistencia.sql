@@ -35,7 +35,7 @@ BEGIN
 
 			DECLARE @fechaInicio SMALLDATETIME , @fechaFin SMALLDATETIME, 
 				@idEmpleado INT , @horasTrabajadas INT , @horaFinNormal TIME(0) , 
-				@idTipoJornada INT , @horasExtra INT ,  @salarioXHora INT , 
+				@idTipoJornada INT , @horasExtra INT ,  @salarioXHora INT , @horasDeJornada INT,
 				@horasExtrasDoble INT, @gananciasOrdinarias FLOAT, @ganaciasExtra FLOAT,
 				@gananciasExtraDoble FLOAT,@idJornada INT;
 
@@ -92,25 +92,35 @@ BEGIN
 													WHERE 
 														Puestos.Id = (SELECT IdPuesto FROM Empleados WHERE Empleados.Id = @idEmpleado));
 
-							SELECT @horaFinNormal = (
-								CONVERT(
-									TIME(0),
-									(SELECT HoraFin FROM TipoJornada WHERE Id = @idTipoJornada)  
-								)
-							);
+
+							SELECT @horasDeJornada = DATEDIFF(HOUR,
+																(SELECT HoraInicio FROM TipoJornada WHERE Id = @idTipoJornada),
+																(SELECT HoraFin FROM TipoJornada WHERE Id = @idTipoJornada)
+																)
+
+
+
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @MarcasAux);
 
-							
+							--Caso de Horass Extras Dobles
 							SELECT 
-								@horasExtrasDoble = DATEDIFF(HOUR,@horaFinNormal,CONVERT(TIME(0),@fechaFin)),
+								@horasExtrasDoble = @horasTrabajadas - @horasDeJornada,
 								@horasExtra = 0,
-								@horasTrabajadas = @horasTrabajadas - @horasExtrasDoble
+								@horasTrabajadas = @horasDeJornada
 							WHERE (DATEPART(WEEKDAY,@fechaActual) = 7) OR (@fechaActual IN (SELECT Fecha FROM Feriados))
 
+
+							--Caso en el que solo se trabajen horas ordinarias y no hay extra
+							SELECT
+								@horasExtra = 0,
+								@horasTrabajadas = @horasDeJornada
+							WHERE @horasTrabajadas <= @horasDeJornada
+
+							--Caso de Horas Extras Normales
 							SELECT 
-								@horasExtra = DATEDIFF(HOUR,@horaFinNormal,CONVERT(TIME(0),@fechaFin)),
+								@horasExtra = @horasTrabajadas-@horasDeJornada,
 								@horasExtrasDoble = 0,
-								@horasTrabajadas = @horasTrabajadas - @horasExtra
+								@horasTrabajadas = @horasDeJornada
 							WHERE (DATEPART(WEEKDAY,@fechaActual) <> 7) AND (@fechaActual NOT IN (SELECT Fecha FROM Feriados))
 							
 							

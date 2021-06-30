@@ -17,11 +17,11 @@
     </head>
     <body>
         <form action="empleadoAEditar.jsp">
-            <% String empleadoSeleccionado  = request.getParameter("empleados");
+            <% String empleadoSeleccionado  = String.valueOf(request.getAttribute("infoEmpleado"));
                 String empleadoActualizado =""; 
                 if(empleadoSeleccionado!=null){
                     String[] infoEmpleado = empleadoSeleccionado.split(" ");
-                    empleadoActualizado = infoEmpleado[1] +" "+ infoEmpleado[2] + " " +infoEmpleado[3];
+                    empleadoActualizado = infoEmpleado[0] +" "+ infoEmpleado[1] + " " +infoEmpleado[2];
                 }
                 else{
                 empleadoActualizado = "";
