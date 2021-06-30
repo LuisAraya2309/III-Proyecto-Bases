@@ -29,7 +29,30 @@ BEGIN
 			SELECT
 				@OutResultCode=0 ;
 
+			--Descripcion del cambio para insertarlo en el historial
+			DECLARE @descripcion VARCHAR(400),@actualizacion VARCHAR(400),@fechaInicio DATE = (SELECT DE.FechaInicio FROM DeduccionXEmpleado AS DE WHERE DE.Id = @inIdDeduccionXEmpleado), 
+			@nombreEmpleado VARCHAR(40) = (SELECT E.Nombre FROM Empleados AS E WHERE E.Id = (SELECT DE.IdEmpleado FROM DeduccionXEmpleado AS DE WHERE DE.Id = @inIdDeduccionXEmpleado)),
+			@tipoDeduccion INT = (SELECT DE.IdTipoDeduccion FROM DeduccionXEmpleado AS DE WHERE DE.Id = @inIdDeduccionXEmpleado);
+
+			SET @descripcion = 'Se elimino la deduccion de id: '+@inIdDeduccionXEmpleado+' al empleado: '+@nombreEmpleado +' ,sus valores eran: ' +
+				' ,fecha de inicio: ' + @fechaInicio  + ' ,tipo de deduccion:'+ @tipoDeduccion;
+
+			SET @actualizacion = 'Deduccion eliminada con exito su fecha de fin se actualizo a: '+ @inFechaFin;
+
 			BEGIN TRANSACTION
+
+				INSERT INTO dbo.Historial
+						(
+						Fecha,
+						Descripcion,
+						Actualizacion
+						)
+						VALUES
+						(
+						GETDATE(),
+						@descripcion,
+						@actualizacion
+						)
 
 				--Se cambia el atributo de la fecha fin de la deduccion con esto se finaliza su periodo de uso 
 				UPDATE dbo.DeduccionXEmpleado

@@ -38,7 +38,30 @@ BEGIN
 			SELECT
 				@OutResultCode=0 ;
 
+			--Descripcion del cambio para insertarlo en el historial
+			DECLARE @descripcion VARCHAR(400),@actualizacion VARCHAR(400),
+			@nombreEmpleado VARCHAR(40) = (SELECT E.Nombre FROM Empleados AS E WHERE E.ValorDocumentoIdentidad = @inValorDocIdentidad);
+
+			SET @descripcion = 'Se inserto una deduccion al empleado: '+@nombreEmpleado +' ,sus valores son: ' +
+				' ,fecha de inicio: ' + @inFechaInicio  + ' ,tipo de deduccion:'+ @inBuscarNombreTipoDedu +' ,monto:'+ @inNuevoMonto ;
+
+			SET @actualizacion = 'Deduccion insertada con exito';
+
 			BEGIN TRANSACTION
+
+				INSERT INTO dbo.Historial
+						(
+						Fecha,
+						Descripcion,
+						Actualizacion
+						)
+						VALUES
+						(
+						GETDATE(),
+						@descripcion,
+						@actualizacion
+						)
+
 				INSERT INTO DeduccionXEmpleado (FechaInicio, IdEmpleado, IdTipoDeduccion)
 					VALUES(
 						@inFechaInicio,

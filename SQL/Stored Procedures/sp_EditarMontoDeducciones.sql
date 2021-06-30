@@ -29,7 +29,38 @@ BEGIN
 		SELECT
 			@OutResultCode=0 ;
 
+		--Descripcion del cambio para insertarlo en el historial
+			DECLARE @descripcion VARCHAR(400),@actualizacion VARCHAR(400), @montoAntiguo FLOAT = (SELECT FNO.Monto FROM FijaNoObligatoria AS FNO WHERE FNO.Id = @inIdDeduccionXEmpleado),
+			@nombreEmpleado VARCHAR(40) = (SELECT E.Nombre FROM Empleados AS E WHERE E.Id = (SELECT DE.IdEmpleado FROM DeduccionXEmpleado AS DE WHERE DE.Id = @inIdDeduccionXEmpleado)),
+			@porcentajeAntiguo FLOAT = (SELECT DEO.Porcentage FROM DeduccionXEmpleadoNoObligatoriaPorcentual AS DEO WHERE DEO.Id = @inIdDeduccionXEmpleado);
+
+			SELECT 
+				@descripcion = 'Edicion de la deduccion por empleado de id: '+ @inIdDeduccionXEmpleado +' del empleado: '+@nombreEmpleado +' ,Valores Antiguos: ' +
+				' ,monto: ' + @montoAntiguo
+			WHERE @inTipoMonto = 1;
+
+			SELECT 
+				@descripcion = 'Edicion de la deduccion por empleado de id: '+ @inIdDeduccionXEmpleado +' del empleado: '+@nombreEmpleado +' ,Valores Antiguos: ' +
+				' ,monto: ' + @porcentajeAntiguo
+			WHERE @inTipoMonto = 0;
+			
+			SET @actualizacion = 'Edicion de la deduccion por empleado de id: '+ @inIdDeduccionXEmpleado + ' del empleado: '+@nombreEmpleado + ',Valores Actualizados: ' +
+								' ,monto: ' + @inNuevoValor;
+
 		BEGIN TRANSACTION
+
+			INSERT INTO dbo.Historial
+					(
+					Fecha,
+					Descripcion,
+					Actualizacion
+					)
+					VALUES
+					(
+					GETDATE(),
+					@descripcion,
+					@actualizacion
+					)
 
 			-- Se edita el monto de la deduccion dependiendo de si son fijas no obligatorias o porcentual no obligatoria
 
