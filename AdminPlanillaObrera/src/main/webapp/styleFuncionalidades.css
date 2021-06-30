@@ -1,22 +1,37 @@
 h1{
-    font: bold 300% 'KoHo' ;
+    font: bold 100% 'KoHo' ;
     text-align: center;
     color:whitesmoke;
 }
 
 body{
     background: url(funcionalidades.jpg);
+    font: bold 100% 'KoHo' ;
 }
 
 input{
-    font: bold 65% 'KoHo';
+    font: bold 150% 'KoHo';
     background: #ffffff
 }
 
 form{
-    font: bold 250% 'KoHo';
+    font: bold 65% 'KoHo';
     text-align: center;
     color:white;
 }
 
+table{
+     align-self:center;
+     text-align: center;
+     font: bold 100% 'KoHo';
+     table-layout: fixed;
+     color:whitesmoke;
+     background: #000000;
+     border-collapse: collapse;
+     margin: 0 auto;
+}
+
+td ,tr{
+  padding: 20px;
+}
 

@@ -144,6 +144,11 @@ BEGIN
 								@ganaciasExtra = (@salarioXHora*1.5*@horasExtra),
 								@gananciasExtraDoble = (@salarioXHora*2*@horasExtrasDoble)
 
+							
+							SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+
+							BEGIN TRANSACTION MarcaAsistenciaMov
+
 							--Inserta la marca de asistencia
 							INSERT INTO dbo.MarcaDeAsistencia (
 								FechaEntrada,
@@ -238,7 +243,7 @@ BEGIN
 							WHERE @horasExtrasDoble>0 AND @horasExtra = 0
 
 
-							
+							--Actualiza la planilla x semana x empleado
 							UPDATE dbo.PlanillaXSemanaxEmpleado
 								SET SalarioBruto = SalarioBruto + @gananciasExtraDoble + @ganaciasExtra + @gananciasOrdinarias,
 									SalarioNeto = SalarioNeto + @gananciasExtraDoble + @ganaciasExtra + @gananciasOrdinarias
@@ -437,16 +442,17 @@ BEGIN
 
 						END -- end del while
 					
-						
+						COMMIT TRANSACTION
 					
 							
 					DELETE FROM @MarcasAux;
-					COMMIT TRANSACTION TSaveMov
+
+					COMMIT TRANSACTION MarcaAsistenciaMov  --Termina la transaction
 		END TRY
 		BEGIN CATCH
 
 				IF @@Trancount>0 
-					ROLLBACK TRANSACTION TSaveMov;
+					ROLLBACK TRANSACTION MarcaAsistenciaMov;
 				INSERT INTO dbo.Errores	VALUES (
 					SUSER_SNAME(),
 					ERROR_NUMBER(),

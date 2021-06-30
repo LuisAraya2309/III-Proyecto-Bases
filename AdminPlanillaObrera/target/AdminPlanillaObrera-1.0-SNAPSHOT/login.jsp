@@ -14,6 +14,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Comprobando</title>
         <link href = "styleLogin.css" type = "text/css"  rel = "stylesheet" />
         <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -38,7 +39,6 @@
                     cargar.executeQuery();
                 }
                 */
-                System.out.println("Ya hay datos");
                 String user = request.getParameter("user");
                 String password = request.getParameter("password");
                 if(validacionesSQL.validLogin(user, password)){

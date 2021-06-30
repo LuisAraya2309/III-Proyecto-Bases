@@ -1,11 +1,12 @@
 h1{
-    font: bold 300% 'KoHo' ;
+    font: bold 200% 'KoHo' ;
     text-align: center;
     color:whitesmoke;
 }
 
 body{
     background: url(centralBackground.jpg);
+     font: bold 200% 'KoHo' ;
 }
 
 input{
@@ -15,7 +16,7 @@ input{
 }
 
 form{
-    font: bold 250% 'KoHo';
+    font: bold 150% 'KoHo';
     text-align: center;
     color:white;
 }

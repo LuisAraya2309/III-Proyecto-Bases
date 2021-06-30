@@ -13,8 +13,8 @@
     <head>
         <title>Administrar Sistema Obrero</title>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href = "styleCentral.css" type = "text/css"  rel = "stylesheet" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="preconnect" href="https://fonts.gstatic.com">
         <link href="https://fonts.googleapis.com/css2?family=KoHo:wght@200&display=swap" rel="stylesheet">
     </head>
