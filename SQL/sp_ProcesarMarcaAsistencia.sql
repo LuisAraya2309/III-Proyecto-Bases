@@ -23,7 +23,7 @@ BEGIN
 			--Marcas de Asistencia
 
 			--Variables generales
-			DECLARE @secItera INT, @secInicial INT,@secFinal INT,@produceError INT;
+			DECLARE @secItera INT, @secInicial INT,@secFinal INT,@produceError INT,@mensajeError VARCHAR(100);
 
 			--Variable Tabla de Marcas Auxiliares
 			DECLARE @MarcasAux TABLE (
@@ -114,6 +114,21 @@ BEGIN
 							WHERE (DATEPART(WEEKDAY,@fechaActual) <> 7) AND (@fechaActual NOT IN (SELECT Fecha FROM Feriados))
 							
 							
+							--Verificamos si produce error
+							IF @produceError = 1
+								BEGIN
+									SELECT @mensajeError = 'Hubo un error en el proceso de la marca de asistencia del empleado de Id: ' + CONVERT(VARCHAR,@idEmpleado);
+									
+									--AGREGAR A LA BITACORA EL ERROR
+									INSERT INTO dbo.BitacoraErrores
+										VALUES
+										(
+										@fechaActual,
+										@mensajeError
+										)
+								
+								END
+
 							--CALCULAR LAS GANANCIAS POR HORA
 							
 							SELECT 
@@ -443,4 +458,3 @@ BEGIN
 
 END
 GO
-

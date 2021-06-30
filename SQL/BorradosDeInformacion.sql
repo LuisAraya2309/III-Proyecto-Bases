@@ -27,7 +27,7 @@ delete from DeduccionXEmpleadoXMes;
 delete from MovimientoPlanilla;
 delete from Usuarios;
 DELETE FROM TipoMovimientoPlanilla
-
+delete from Historial;
 
 --IDENTITY
 DBCC CHECKIDENT ('Empleados', RESEED, 0)
@@ -45,6 +45,7 @@ DBCC CHECKIDENT ('BitacoraErrores', RESEED, 0)
 DBCC CHECKIDENT ('MovimientoPlanilla', RESEED, 0)
 DBCC CHECKIDENT ('TipoMovimientoPlanilla', RESEED, 0)
 DBCC CHECKIDENT ('Usuarios', RESEED, 0)
+DBCC CHECKIDENT ('Historial', RESEED, 0)
 --STORED PROCEDURES
 /*DROP PROCEDURE sp_InsertarTipoJornadaProximaSemana*/
 

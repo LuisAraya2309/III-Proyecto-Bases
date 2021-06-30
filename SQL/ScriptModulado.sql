@@ -265,12 +265,9 @@ WHILE @fechaActual<=@ultimaFecha
 							SELECT @NombreUsuario  = (SELECT TOP(1) NombreUsuario FROM @EmpleadosTemp);
 							SELECT @Contraseña  = (SELECT TOP(1) Contraseña FROM @EmpleadosTemp);
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @EmpleadosTemp);
-							/*
+							
 							IF @produceError = 1
 								BEGIN
-									PRINT('Entro')
-									DELETE TOP (1) FROM @EmpleadosTemp
-									SELECT @secItera = @secItera + 1;
 									SELECT @mensajeError = 'Hubo un error en la insercion del empleado de identificacion: ' + CONVERT(VARCHAR,@ValorDocumentoIdentidad);
 									
 									--AGREGAR A LA BITACORA EL ERROR
@@ -281,9 +278,8 @@ WHILE @fechaActual<=@ultimaFecha
 										@mensajeError
 										)
 								
-									CONTINUE;
 								END
-							*/
+							
 							EXEC sp_InsertarEmpleado
 								@Nombre
 								, @ValorDocumentoIdentidad
@@ -329,11 +325,9 @@ WHILE @fechaActual<=@ultimaFecha
 						BEGIN
 							SELECT @ValorDocId = (SELECT TOP(1) ValorDocIdentidad FROM @EliminacionesEmpleados)
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @EliminacionesEmpleados);
-							/*
+							
 							IF @produceError = 1
 								BEGIN
-									DELETE TOP (1) FROM @EliminacionesEmpleados
-									SELECT @secItera = @secItera + 1;
 									SELECT @mensajeError = 'Hubo un error eliminando al empleado con valor de documento de identidad: ' + CONVERT(VARCHAR,@ValorDocId);
 									
 									--AGREGAR A LA BITACORA EL ERROR
@@ -344,12 +338,24 @@ WHILE @fechaActual<=@ultimaFecha
 										@mensajeError
 										)
 								
-									CONTINUE;
 								END
-							*/
+							
 							EXEC sp_EliminarEmpleados
 								@ValorDocId
 								, 0
+							
+							INSERT INTO dbo.Historial
+								(
+								Fecha,
+								Descripcion
+								)
+								VALUES
+								(
+								@fechaActual,
+								'Eliminacion del empleado con valor de documento de identidad: ' + 
+								CONVERT(VARCHAR,@ValorDocId)
+								)
+
 
 							INSERT INTO dbo.DetalleCorrida
 								VALUES
@@ -392,11 +398,9 @@ WHILE @fechaActual<=@ultimaFecha
 							SELECT @idTipoDeduccion  = (SELECT TOP(1) IdTipoDeduccion FROM @AsociaDeduccionTemp);
 							SELECT @montoDeduccion = (SELECT TOP(1) Monto FROM @AsociaDeduccionTemp);
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @AsociaDeduccionTemp);
-							/*
+							
 							IF (@produceError = 1)
 								BEGIN
-									DELETE TOP (1) FROM @AsociaDeduccionTemp
-									SELECT @secItera = @secItera + 1;
 									SELECT @mensajeError = 'Hubo un error asociando al empleado con valor de documento de identidad ' + CONVERT(VARCHAR,@ValorDocId) + ' con la deduccion de tipo '+ CONVERT(VARCHAR, @idTipoDeduccion);
 									
 									--AGREGAR A LA BITACORA EL ERROR
@@ -406,11 +410,9 @@ WHILE @fechaActual<=@ultimaFecha
 										@fechaActual,
 										@mensajeError
 										)
-								
-									CONTINUE;
 								END
 
-							*/
+							
 							--SELECT @idEmpleado = (SELECT Id FROM dbo.Empleados WHERE ValorDocumentoIdentidad = @ValorDocumentoIdentidad)
 							SELECT @idMaximoSemanaPlanilla =  MAX(Id) FROM dbo.SemanaPlanilla
 							IF DATEPART(WEEKDAY, @fechaActual) = 4
@@ -448,8 +450,31 @@ WHILE @fechaActual<=@ultimaFecha
 									(SELECT MAX(Id) FROM dbo.DeduccionXEmpleado WHERE IdEmpleado = @idEmpleado),
 									(CONVERT(FLOAT,@montoDeduccion))
 									)
-
 							
+
+							--Actualizamos el historial de cambios
+							INSERT INTO dbo.Historial
+								(
+								Fecha,
+								Descripcion
+								)
+								SELECT
+									@fechaActual,
+									('Asociacion de Deduccion de Id: ' + CONVERT(VARCHAR,DE.Id) +
+									' Id Empleado: ' + CONVERT(VARCHAR(10), DE.IdEmpleado) +
+									' Id Tipo de Deduccion: ' + CONVERT(VARCHAR(10), DE.IdTipoDeduccion) +
+									' Nombre Deduccion: ' + TP.Nombre +
+									' Es Obligatoria: ' + CONVERT(VARCHAR(2), TP.EsObligatoria) +
+									' Es Porcentual: ' + CONVERT(VARCHAR(2), TP.EsPorcentual)
+									)
+
+								FROM dbo.DeduccionXEmpleado AS DE
+								INNER JOIN dbo.TipoDeduccion AS TP
+								ON DE.IdTipoDeduccion = TP.Id
+								WHERE DE.Id = (SELECT MAX(Id) FROM DeduccionXEmpleado)
+
+								
+
 							INSERT INTO dbo.DetalleCorrida
 								VALUES
 								(
@@ -488,11 +513,9 @@ WHILE @fechaActual<=@ultimaFecha
 								SELECT @idMaximoSemanaPlanilla =  MAX(Id) FROM dbo.SemanaPlanilla;
 								SELECT @idDedXEmpleado = (SELECT MAX(Id) FROM DeduccionXEmpleado 
 									 WHERE IdEmpleado = @IdEmpleado AND IdTipoDeduccion = @IdTipoDeduccion);
-								/*
+								
 								IF @produceError = 1
 									BEGIN
-										DELETE TOP (1) FROM @DesasociaEmpleado
-										SELECT @secItera = @secItera + 1;
 										SELECT @mensajeError = 'Hubo un error desasociando al empleado con valor de documento de identidad ' + CONVERT(VARCHAR,@ValorDocId) + ' con la deduccion de tipo '+ CONVERT(VARCHAR, @idTipoDeduccion);
 									
 										--AGREGAR A LA BITACORA EL ERROR
@@ -503,9 +526,8 @@ WHILE @fechaActual<=@ultimaFecha
 											@mensajeError
 											)
 								
-										CONTINUE;
 									END
-								*/
+								
 								IF DATEPART(WEEKDAY, @fechaActual) = 4
 									BEGIN
 										SELECT @fechaDeduFin = @fechaActual;
@@ -519,7 +541,37 @@ WHILE @fechaActual<=@ultimaFecha
 									SET FechaFin = @fechaDeduFin
 									WHERE Id = @idDedXEmpleado;
 
-							
+
+								INSERT INTO dbo.DetalleCorrida
+									VALUES
+									(
+									(SELECT MAX(Id) FROM dbo.Corrida),
+									4,
+									@secItera
+									)
+
+								--Actualizamos el historial de cambios
+								INSERT INTO dbo.Historial
+									(
+									Fecha,
+									Descripcion
+									)
+									SELECT
+										@fechaActual,
+										('Desasociacion de Deduccion de Id: ' + CONVERT(VARCHAR,DE.Id) +
+										' Id Empleado: ' + CONVERT(VARCHAR(10), DE.IdEmpleado) +
+										' Id Tipo de Deduccion: ' + CONVERT(VARCHAR(10), DE.IdTipoDeduccion) +
+										' Nombre Deduccion: ' + TP.Nombre +
+										' Es Obligatoria: ' + CONVERT(VARCHAR(2), TP.EsObligatoria) +
+										' Es Porcentual: ' + CONVERT(VARCHAR(2), TP.EsPorcentual)
+										)
+
+									FROM dbo.DeduccionXEmpleado AS DE
+									INNER JOIN dbo.TipoDeduccion AS TP
+									ON DE.IdTipoDeduccion = TP.Id
+									WHERE DE.Id = (SELECT MAX(Id) FROM DeduccionXEmpleado)
+
+
 								DELETE TOP (1) FROM @DesasociaEmpleado;
 								SELECT @secItera = @secItera + 1;
 							END
@@ -551,11 +603,9 @@ WHILE @fechaActual<=@ultimaFecha
 							SELECT @ValorDocIdentidad =  (SELECT TOP(1) ValorDocIdentidad FROM @JornadaTemp)
 							SELECT @IdSemanaPlanilla = (SELECT TOP(1) IdSemanaPlanilla FROM @JornadaTemp)
 							SELECT @produceError  = (SELECT TOP(1) ProduceError FROM @JornadaTemp);
-							/*
+							
 							IF @produceError = 1
 								BEGIN
-									DELETE TOP (1) FROM @JornadaTemp
-									SELECT @secItera = @secItera + 1;
 									SELECT @mensajeError = 'Hubo un error en la insercion de la jornada proxima semana del empleado con valor de documento de identidad: ' + CONVERT(VARCHAR,@ValorDocIdentidad);
 									
 									--AGREGAR A LA BITACORA EL ERROR
@@ -566,9 +616,8 @@ WHILE @fechaActual<=@ultimaFecha
 										@mensajeError
 										)
 								
-									CONTINUE;
 								END
-							*/
+							
 							EXEC sp_InsertarJornadaProximaSemana
 								@IdJornada
 								, @ValorDocIdentidad
