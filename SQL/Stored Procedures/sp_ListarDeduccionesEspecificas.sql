@@ -25,11 +25,11 @@ BEGIN
         END
 
         SELECT DISTINCT
-            DE.Id,
-            TP.Nombre,
-            TP.EsObligatoria,
-            DPO.Porcentage,
-            MP.Monto * -1 AS Monto
+            DE.Id AS Id,
+            TP.Nombre AS Nombre,
+            TP.EsObligatoria AS EsObligatoria,
+            DPO.Porcentage AS Porcentage,
+            MP.Monto AS Monto
         FROM dbo.DeduccionXEmpleado AS DE 
             INNER JOIN dbo.MovimientoDeduccion AS MD
                 ON De.Id = MD.IdDeduccionXEmpleado

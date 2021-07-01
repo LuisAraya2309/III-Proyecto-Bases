@@ -39,11 +39,11 @@
                             ps.setInt(7, 0);
                             ps.executeQuery();
                         }catch(SQLException ex){
-                            System.out.println(ex);
+                            
                         }
                         out.println("<h1>Empleado editado con éxito</h1>");
                         out.println("<a href='central.jsp'>Regresar a la central</a>");
-                        out.println("<a href='editarEmpleados.html'>Regresar a la edición de empleados</a>");
+                        out.println("<a href='editarEmpleados.jsp'>Regresar a la edición de empleados</a>");
                     }
                     else{
                         out.println("<h1>El nombre ingresado es invalido, debe de tener menos de 40 caracteres. </h1>");

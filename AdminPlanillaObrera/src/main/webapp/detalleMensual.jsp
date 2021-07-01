@@ -21,25 +21,25 @@
             <tr>
                 <!-- Nombres de las columnas -->
                 <td>Id</td>
-                <td>Total de Deduccion</td>
-                <td>IdPlanillaXMesXEmpleado</td>
-                <td>IdTipoDeduccion</td>
+                <td>Nombre</td>
+                <td>Es Obligatoria</td>
+                <td>Total Deduccion</td>
             </tr>
             <%
                 try{
                     conexionBD conection = new conexionBD();
                     Connection conexion = conection.getConexion();    
                     int idPlanilla = Integer.parseInt(request.getParameter("Detalle"));
-                    PreparedStatement ps = conexion.prepareStatement("EXEC sp_DetalleDeduccionesMes ?,?");
+                    PreparedStatement ps = conexion.prepareStatement("EXEC sp_DeduccionesMensuales ?,?");
                     ps.setInt(1, idPlanilla);
                     ps.setInt(2, 0);
                     ResultSet dataset = ps.executeQuery();
                     while(dataset.next()){
                         out.println("<tr>"+
                                     "<td>"+ dataset.getInt("Id") +"<td>"+
+                                    "<td>"+ dataset.getString("Nombre") +"<td>"+
+                                    "<td>"+ dataset.getString("EsObligatoria") +"<td>"+
                                     "<td>"+ dataset.getFloat("TotalDeduccion") +"<td>"+
-                                    "<td>"+ dataset.getInt("IdPlanillaXMesXEmpleado") +"<td>"+
-                                    "<td>"+ dataset.getInt("IdTipoDeduccion") +"<td>"+
                                     "<tr>"
                                     );
                     }

@@ -25,11 +25,11 @@ BEGIN
         END
 
         SELECT DISTINCT
-            DEM.Id,
-            TP.Nombre,
-            TP.EsObligatoria,
-            DPO.Porcentage,
-            DEM.TotalDeduccion
+            DEM.Id AS Id, 
+            TP.Nombre AS Nombre,
+            TP.EsObligatoria AS EsObligatoria,
+            DPO.Porcentage AS Porcentaje,
+            DEM.TotalDeduccion AS TotalDeduccion
         FROM dbo.DeduccionXEmpleadoXMes AS DEM
             INNER JOIN dbo.TipoDeduccion AS TP
                 ON TP.Id = DEM.IdTipoDeduccion

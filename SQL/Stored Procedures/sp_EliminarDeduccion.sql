@@ -30,16 +30,16 @@ BEGIN
 				@OutResultCode=0 ;
 
 			--Descripcion del cambio para insertarlo en el historial
-			DECLARE @descripcion VARCHAR(400),@actualizacion VARCHAR(400),@fechaInicio DATE = (SELECT DE.FechaInicio FROM DeduccionXEmpleado AS DE WHERE DE.Id = @inIdDeduccionXEmpleado), 
+			DECLARE @descripcion VARCHAR(400),@actualizacion VARCHAR(400),@fechaInicio VARCHAR = CONVERT(VARCHAR,(SELECT DE.FechaInicio FROM DeduccionXEmpleado AS DE WHERE DE.Id = @inIdDeduccionXEmpleado)), 
 			@nombreEmpleado VARCHAR(40) = (SELECT E.Nombre FROM Empleados AS E WHERE E.Id = (SELECT DE.IdEmpleado FROM DeduccionXEmpleado AS DE WHERE DE.Id = @inIdDeduccionXEmpleado)),
-			@tipoDeduccion INT = (SELECT DE.IdTipoDeduccion FROM DeduccionXEmpleado AS DE WHERE DE.Id = @inIdDeduccionXEmpleado);
+			@tipoDeduccion VARCHAR = CONVERT(VARCHAR,(SELECT DE.IdTipoDeduccion FROM DeduccionXEmpleado AS DE WHERE DE.Id = @inIdDeduccionXEmpleado));
 
-			SET @descripcion = 'Se elimino la deduccion de id: '+@inIdDeduccionXEmpleado+' al empleado: '+@nombreEmpleado +' ,sus valores eran: ' +
+			SET @descripcion = 'Se elimino la deduccion de id: '+CONVERT(VARCHAR,@inIdDeduccionXEmpleado)+' al empleado: '+@nombreEmpleado +' ,sus valores eran: ' +
 				' ,fecha de inicio: ' + @fechaInicio  + ' ,tipo de deduccion:'+ @tipoDeduccion;
 
-			SET @actualizacion = 'Deduccion eliminada con exito su fecha de fin se actualizo a: '+ @inFechaFin;
+			SET @actualizacion = 'Deduccion eliminada con exito su fecha de fin se actualizo a: '+ CONVERT(VARCHAR,@inFechaFin);
 
-			BEGIN TRANSACTION
+			BEGIN TRANSACTION TSaveMov
 
 				INSERT INTO dbo.Historial
 						(

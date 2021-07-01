@@ -43,11 +43,11 @@ BEGIN
 			@nombreEmpleado VARCHAR(40) = (SELECT E.Nombre FROM Empleados AS E WHERE E.ValorDocumentoIdentidad = @inValorDocIdentidad);
 
 			SET @descripcion = 'Se inserto una deduccion al empleado: '+@nombreEmpleado +' ,sus valores son: ' +
-				' ,fecha de inicio: ' + @inFechaInicio  + ' ,tipo de deduccion:'+ @inBuscarNombreTipoDedu +' ,monto:'+ @inNuevoMonto ;
+				' ,fecha de inicio: ' + CONVERT(VARCHAR,@inFechaInicio)  + ' ,tipo de deduccion:'+ CONVERT(VARCHAR,@inBuscarNombreTipoDedu) +' ,monto:'+ CONVERT(VARCHAR,@inNuevoMonto) ;
 
 			SET @actualizacion = 'Deduccion insertada con exito';
 
-			BEGIN TRANSACTION
+			BEGIN TRANSACTION TSaveMov
 
 				INSERT INTO dbo.Historial
 						(

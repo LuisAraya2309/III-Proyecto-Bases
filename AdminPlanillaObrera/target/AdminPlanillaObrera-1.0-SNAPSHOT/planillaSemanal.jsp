@@ -69,7 +69,7 @@
                     %>
             </table>
             
-            <input type="submit" value="Detalle">
+            <input type="submit" value="Detalle de Asistencias">
             
         </form>
         

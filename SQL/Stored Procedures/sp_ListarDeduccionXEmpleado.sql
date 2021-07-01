@@ -12,8 +12,8 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT 
-		DE.Id,
-		DE.FechaInicio,
+		DE.Id AS Id,
+		DE.FechaInicio AS FechaInicio,
 		(SELECT TD.Nombre FROM TipoDeduccion AS TD WHERE TD.Id = DE.IdTipoDeduccion) AS NombreTipoDedu,
 		(SELECT FNO.Monto FROM FijaNoObligatoria AS FNO WHERE DE.Id = FNO.Id) AS MontoFijaNoO,
 		(SELECT NOP.Porcentage FROM DeduccionXEmpleadoNoObligatoriaPorcentual AS NOP WHERE DE.Id = NOP.Id) AS PorcentajeNoObligatoria

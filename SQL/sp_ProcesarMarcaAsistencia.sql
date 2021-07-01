@@ -17,7 +17,7 @@ BEGIN
 
 		SET NOCOUNT ON;
 		BEGIN TRY
-			BEGIN TRANSACTION TSaveMov
+
 			SELECT
 			@OutResultCode=0;
 			--Marcas de Asistencia
@@ -144,9 +144,7 @@ BEGIN
 								@ganaciasExtra = (@salarioXHora*1.5*@horasExtra),
 								@gananciasExtraDoble = (@salarioXHora*2*@horasExtrasDoble)
 
-							
 							SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
-
 							BEGIN TRANSACTION MarcaAsistenciaMov
 
 							--Inserta la marca de asistencia
@@ -436,18 +434,17 @@ BEGIN
 												
 								END
 							
-
+							COMMIT TRANSACTION MarcaAsistenciaMov
 							DELETE TOP (1) FROM @MarcasAux
 							SELECT @secItera = @secItera + 1;
 
 						END -- end del while
 					
-						COMMIT TRANSACTION
-					
 							
 					DELETE FROM @MarcasAux;
 
-					COMMIT TRANSACTION MarcaAsistenciaMov  --Termina la transaction
+					  --Termina la transaction
+					
 		END TRY
 		BEGIN CATCH
 

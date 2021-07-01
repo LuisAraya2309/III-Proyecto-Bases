@@ -55,12 +55,20 @@
                                     "<tr>"
                                     );
                     }
+                    
                 }
                 catch(SQLException ex){
                     System.out.println(ex);
                 }
             %>
         </table>
+        
+        <form action = "deduccionSemana.jsp">
+            <input type="submit" value="Deducciones de esta semana">
+            <input type="hidden" name="idPlanilla" value="<%= Integer.parseInt(request.getParameter("Detalle")) %>" />
+           
+            
+        </form>
         
     </body>
 </html>

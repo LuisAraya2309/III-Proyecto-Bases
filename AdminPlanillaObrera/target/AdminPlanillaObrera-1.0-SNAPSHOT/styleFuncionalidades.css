@@ -19,6 +19,13 @@ form{
     text-align: center;
     color:white;
 }
+select{
+    font: bold 100% 'KoHo';
+    text-align: center;
+    color:whitesmoke;
+    background: black
+    
+}
 
 table{
      align-self:center;
