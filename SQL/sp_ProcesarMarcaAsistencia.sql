@@ -243,9 +243,9 @@ BEGIN
 
 							--Actualiza la planilla x semana x empleado
 							UPDATE dbo.PlanillaXSemanaxEmpleado
-								SET SalarioBruto = SalarioBruto + @gananciasExtraDoble + @ganaciasExtra + @gananciasOrdinarias,
-									SalarioNeto = SalarioNeto + @gananciasExtraDoble + @ganaciasExtra + @gananciasOrdinarias
-							
+								SET SalarioBruto = dbo.CalcularUpdatePlanilla( SalarioBruto , @gananciasExtraDoble , @ganaciasExtra , @gananciasOrdinarias),
+									SalarioNeto = dbo.CalcularUpdatePlanilla( SalarioNeto , @gananciasExtraDoble , @ganaciasExtra , @gananciasOrdinarias)
+								
 								WHERE Id = (SELECT MAX(PSE.Id) FROM dbo.PlanillaXSemanaxEmpleado AS PSE WHERE PSE.IdEmpleado = @idEmpleado );
 							
 
@@ -339,7 +339,7 @@ BEGIN
 															)
 
 														UPDATE dbo.PlanillaXSemanaxEmpleado
-															SET SalarioNeto = SalarioNeto - @montoDeduccionED
+															SET SalarioNeto = dbo.CalcularSalarioNeto(SalarioNeto , @montoDeduccionED)
 															WHERE Id = @idMaximoPSE AND IdEmpleado = @idEmpleadoDE;
 
 
@@ -349,7 +349,7 @@ BEGIN
 																	IdPlanillaXMesXEmpleado = @idMaximoPME)
 															BEGIN
 																UPDATE dbo.DeduccionXEmpleadoXMes
-																SET TotalDeduccion = TotalDeduccion + @montoDeduccionED
+																SET TotalDeduccion = dbo.CalcularTotalDeducciones( TotalDeduccion , @montoDeduccionED)
 																WHERE (
 																	IdTipoDeduccion = @idTipoDeduccionDE AND
 																	IdPlanillaXMesXEmpleado = @idMaximoPME

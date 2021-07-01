@@ -13,7 +13,6 @@ AS
 				FROM inserted I INNER JOIN TipoDeduccion T
 				ON T.EsObligatoria = 'Si'
 			
-
 	INSERT INTO dbo.PlanillaXMesxEmpleado
 		(
 		SalarioBruto,
@@ -28,8 +27,6 @@ AS
 			(SELECT I.Id  FROM inserted I),
 			(SELECT MAX(MP.Id) AS ID FROM dbo.MesPlanilla AS MP)
 		)
-
-
 
 	INSERT INTO dbo.PlanillaXSemanaxEmpleado
 		(
