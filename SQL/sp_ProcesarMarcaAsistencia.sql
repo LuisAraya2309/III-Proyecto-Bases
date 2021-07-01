@@ -5,7 +5,6 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-
 CREATE PROCEDURE sp_ProcesarMarcaAsistencia
 		@nodoActual XML,
 		@fechaActual DATE,

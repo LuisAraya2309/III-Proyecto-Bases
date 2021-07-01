@@ -48,7 +48,7 @@ BEGIN
 								' ,monto: ' + CONVERT(VARCHAR,@inNuevoValor);
 
 		BEGIN TRANSACTION TSaveMov
-			/*
+			
 			INSERT INTO dbo.Historial
 					(
 					Fecha,
@@ -61,7 +61,7 @@ BEGIN
 					@descripcion,
 					@actualizacion
 					)
-			*/
+
 			-- Se edita el monto de la deduccion dependiendo de si son fijas no obligatorias o porcentual no obligatoria
 
 			UPDATE dbo.DeduccionXEmpleadoNoObligatoriaPorcentual
