@@ -48,7 +48,7 @@ BEGIN
 			SET @actualizacion = 'Deduccion insertada con exito';
 
 			BEGIN TRANSACTION TSaveMov
-
+			    /*
 				INSERT INTO dbo.Historial
 						(
 						Fecha,
@@ -61,6 +61,7 @@ BEGIN
 						@descripcion,
 						@actualizacion
 						)
+						*/
 
 				INSERT INTO DeduccionXEmpleado (FechaInicio, IdEmpleado, IdTipoDeduccion)
 					VALUES(

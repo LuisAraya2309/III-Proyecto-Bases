@@ -18,8 +18,8 @@
         
         <%
             String valorDocIdentidad = request.getParameter("valorDocIdentidad");
-            String fechaInicio = request.getParameter("");
-            String nombreTipoDeduccion = request.getParameter("");
+            String fechaInicio = request.getParameter("fechaInicio");
+            String nombreTipoDeduccion = request.getParameter("tipoDeduccion");
             float nuevoMonto = Float.parseFloat(request.getParameter("nuevoMonto"));
             boolean tipoMonto;
             if(request.getParameter("tipoMonto").equals("Fija No Obligatoria")){
@@ -28,7 +28,6 @@
             else{
             tipoMonto = true;
             }
-            
             try{
                 conexionBD conection = new conexionBD();
                 Connection conexion = conection.getConexion();
@@ -41,11 +40,13 @@
                 ps.setBoolean(5,tipoMonto);
                 ps.setInt(6, 0);
                 ps.executeQuery();
+                
+                
             }
             catch(SQLException ex){
             System.out.println(ex);
             }
-            out.println("<h1>Empleado editado con éxito</h1>");
+            out.println("<h1>Deduccion agregada con exito.</h1>");
 
             
             

@@ -40,7 +40,7 @@ BEGIN
 			SET @actualizacion = 'Deduccion eliminada con exito su fecha de fin se actualizo a: '+ CONVERT(VARCHAR,@inFechaFin);
 
 			BEGIN TRANSACTION TSaveMov
-
+				/*
 				INSERT INTO dbo.Historial
 						(
 						Fecha,
@@ -53,7 +53,7 @@ BEGIN
 						@descripcion,
 						@actualizacion
 						)
-
+			*/
 				--Se cambia el atributo de la fecha fin de la deduccion con esto se finaliza su periodo de uso 
 				UPDATE dbo.DeduccionXEmpleado
 					SET
